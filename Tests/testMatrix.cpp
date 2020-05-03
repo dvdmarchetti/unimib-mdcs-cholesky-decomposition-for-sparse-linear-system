@@ -7,6 +7,8 @@ using namespace std;
 using namespace arma;
 
 int main() {
+	
+	///Armadillo.old
     sp_mat A;
     string filename = "./matrix/ex15.mtx";
     //string filename = "./matrix/cfd1.mtx";
@@ -32,20 +34,9 @@ int main() {
     // cout << A << endl;
     // cout << xe << endl;
     // cout << b << endl; 
-    try {
-        cout << "## Solve matrix ##" << endl;
-        sp_mat R;
-        R = chol(A);
-    }
-    catch (std::runtime_error &e) {
-
-        cout << "Error Chol: " << e.what() << endl;
-
-    }
-    //dvec x_ap = spsolve(_chol, b);
-
-    // cout << "## Results ##" << endl;
-    // cout << "Errore relativo: " << normalise(x_es - x_ap) / normalise(x_es) << endl; 
+///END
+///ALGILIB
+	
     
     return 0;
 }
