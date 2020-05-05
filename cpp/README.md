@@ -17,12 +17,12 @@ For further details check the `matlab` directory of this repository.
 The program has been compiled and tested under g++ v9.2.0 on Windows and Linux and requires at least c++17 standards.
 
 The compilation is managed by a Makefile that can be run from the `cpp` folder with the following command:
-```
+```sh
 make clean && make debug
 ```
 
 You can also compile an optimized version with the following command:
-```
+```sh
 make clean && make release
 ```
 
@@ -30,6 +30,16 @@ In both cases the binaries will be placed in the corresponding subfolder inside 
 
 ### Usage
 Before the actual execution, make sure to put the mtx files in the matrix folder. If you want to skip a matrix file for a particular execution, prefix the filename with an underscore(`_`).
+
+To run the program:
+```sh
+./build/debug/main.exe
+```
+
+or:
+```sh
+./build/release/main.exe
+```
 
 ### Output
 The program generates a CSV output that can be further analyzed and compared.
