@@ -8,7 +8,7 @@ Run the following command inside the `libs` subfolder:
 git clone https://gitlab.com/libeigen/eigen.git eigen
 ```
 
-### Libraries installation and conversion
+### Matrix conversion
 Since the given .mtx matrix files are symmetric matrixes and Eigen doesn't support parsing MTX files defined as symmetric, matrixes needs to be regenerated through Matlab with a custom script.
 
 For further details check the `matlab` directory of this repository.
