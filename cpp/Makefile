@@ -4,7 +4,7 @@ CC = g++
 CFLAGS = -Ilibs/eigen -Ilibs/csv/include --std=c++17 -Iinclude -lpsapi
 
 # Project files
-SRCS = main.cpp src/memory_xplatform.cpp src/csv_utils.cpp
+SRCS = main.cpp src/memory_xplatform.cpp
 OBJS = $(SRCS:.cpp=.o)
 EXE = main
 
@@ -18,7 +18,7 @@ DBGCFLAGS = -g -O0 -DDEBUG
 RELDIR = build/release
 RELEXE = $(RELDIR)/$(EXE)
 RELOBJS = $(addprefix $(RELDIR)/, $(OBJS))
-RELCFLAGS = -O3 -DDEBUG
+RELCFLAGS = -Ofast -DDEBUG
 
 .PHONY: all clean debug prep release remake
 

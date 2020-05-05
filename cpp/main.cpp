@@ -5,9 +5,8 @@
 #include <vector>
 
 #include <Eigen/Sparse>
-#include <unsupported/Eigen/src/SparseExtra/MarketIO.h>
+#include <unsupported/Eigen/SparseExtra>
 
-#include <csv_utils.h>
 #include <memory_xplatform.h>
 
 #ifdef DEBUG
@@ -17,19 +16,23 @@
 #endif
 
 #define CSV_EOL "\n"
+#define CSV_EOL "\n"
 
-typedef Eigen::SparseMatrix<double, Eigen::RowMajor, long int> SpMat;
+typedef Eigen::SparseMatrix<double> SpMat;
 
 std::ofstream output;
 
 void analyze_matrix(std::string filename);
-void print_csv_row(std::ofstream &stream, std::vector<std::string> columns) {
-    stream << join(columns, ",") << CSV_EOL;
-}
 
 int main() {
     output.open("output.csv", std::ofstream::out);
-    print_csv_row(output, {"filename", "size", "proc_memory_start", "proc_memory_end", "b_time", "chol_time", "relative_error"});
+    output << "filename" << ","
+        << "size" << ","
+        << "proc_memory_start" << ","
+        << "proc_memory_end" << ","
+        << "b_time" << ","
+        << "chol_time" << ","
+        << "relative_error" << CSV_EOL;
 
     std::string path = "matrix";
     for (const auto & entry : std::filesystem::directory_iterator(path)) {
@@ -105,7 +108,6 @@ void analyze_matrix(std::string filename) {
         << end_proc_virtual << ","
         << b_time.count() << ","
         << chol_time.count() << ","
-        << relative_error
-        << CSV_EOL;
+        << relative_error << CSV_EOL;
     D("");
 }
