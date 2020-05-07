@@ -1,5 +1,20 @@
-#from https://rosettacode.org/wiki/Cholesky_decomposition#Python
+import time
+import psutil
+import os
+
+import numpy as np
+import pandas as pd
+from pprint import pprint
+import scipy
+import scipy.linalg   # SciPy Linear Algebra Library
+from scipy import array, linalg, dot
+from scipy.io import mmread
+
+
 def cholesky(A):
+    """
+    Reference: https://rosettacode.org/wiki/Cholesky_decomposition#Python
+    """
     L = [[0.0] * len(A) for _ in range(len(A))]
     for i, (Ai, Li) in enumerate(zip(A, L)):
         for j, Lj in enumerate(L[:i+1]):
@@ -8,17 +23,7 @@ def cholesky(A):
                       (1.0 / Lj[j] * (Ai[j] - s))
     return L
 
-#!python -m pip install --user numpy scipy matplotlib ipython jupyter pandas sympy nose
-import numpy as np
-import pandas as pd
-import pprint
-import scipy
-import scipy.linalg   # SciPy Linear Algebra Library
-from scipy import array, linalg, dot
-from scipy.io import mmread
-import time
-import os
-import psutil
+# python -m pip install --user numpy scipy matplotlib ipython jupyter pandas sympy nose
 
 matlabroot_ans = 'D:\Program Files\MATLAB\R2020a'
 
@@ -72,13 +77,13 @@ L = scipy.linalg.cholesky(A, lower=True)
 U = scipy.linalg.cholesky(A, lower=False)
 
 print ("A:")
-pprint.pprint(A)
+pprint(A)
 
 print ("L:")
-pprint.pprint(L)
+pprint(L)
 
 print ("U:")
-pprint.pprint(U)
+pprint(U)
 
 """
 L = np.linalg.cholesky(m)
