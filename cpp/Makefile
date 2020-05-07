@@ -1,7 +1,11 @@
 # Compiler flags
 CC = g++
-# CFLAGS = -Ilibs/eigen -Iinclude -lpsapi --std=c++11 -D_GLIBCXX_USE_CXX11_ABI=0
-CFLAGS = -Ilibs/eigen -Ilibs/csv/include --std=c++17 -Iinclude -lpsapi
+_CFLAGS = -Ilibs/eigen --std=c++17 -Iinclude
+ifeq ($(OS),Windows_NT)
+CFLAGS = $(_CFLAGS) -lpsapi
+else
+CFLAGS = $(_CFLAGS)
+endif
 
 # Project files
 SRCS = main.cpp src/memory_xplatform.cpp
@@ -24,6 +28,10 @@ RELCFLAGS = -Ofast -DDEBUG
 
 # Default build
 all: prep release
+
+windows:
+
+unix:
 
 # Debug rules
 debug: $(DBGEXE)
