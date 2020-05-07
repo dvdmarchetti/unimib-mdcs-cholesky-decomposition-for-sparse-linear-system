@@ -27,32 +27,32 @@ namespace memory
     /**
      * Get total available virtual memory.
      */
-    DWORDLONG total_virtual();
+    unsigned long long total_virtual();
 
     /**
      * Get total available physical memory.
      */
-    DWORDLONG total_physical();
+    unsigned long long total_physical();
 
     /**
      * Get the remaining available virtual memory.
      */
-    DWORDLONG current_virtual();
+    unsigned long long current_virtual();
 
     /**
      * Get the remaning available physical memory.
      */
-    DWORDLONG current_physical();
+    unsigned long long current_physical();
 
     /**
      * Get the virtual memory used by the current process.
      */
-    SIZE_T process_current_virtual();
+    unsigned long long process_current_virtual();
 
     /**
      * Get the physical memory used by the current process.
      */
-    SIZE_T process_current_physical();
+    unsigned long long process_current_physical();
 };
 
 #endif

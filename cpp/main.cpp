@@ -118,7 +118,7 @@ result analyze_matrix(std::string filename) {
     D("");
 
     r.size = A.rows();
-    r.memory_delta = end_proc_virtual - start_proc_virtual;
+    r.memory_delta = end_proc_physical - start_proc_physical;
     r.solve_time = chol_finish - chol_start;
     r.relative_error = (x_ap - x_es).norm() / x_es.norm();
 

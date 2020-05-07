@@ -3,8 +3,7 @@
 /**
  * Get total available virtual memory.
  */
-DWORDLONG memory::total_virtual()
-{
+unsigned long long memory::total_virtual() {
 #ifdef OS_WIN
     MEMORYSTATUSEX memInfo;
     memInfo.dwLength = sizeof(MEMORYSTATUSEX);
@@ -28,8 +27,7 @@ DWORDLONG memory::total_virtual()
 /**
  * Get total available physical memory.
  */
-DWORDLONG memory::total_physical()
-{
+unsigned long long memory::total_physical() {
 #ifdef OS_WIN
     MEMORYSTATUSEX memInfo;
     memInfo.dwLength = sizeof(MEMORYSTATUSEX);
@@ -52,8 +50,7 @@ DWORDLONG memory::total_physical()
 /**
  * Get the remaining available virtual memory.
  */
-DWORDLONG memory::current_virtual()
-{
+unsigned long long memory::current_virtual() {
 #ifdef OS_WIN
     MEMORYSTATUSEX memInfo;
     memInfo.dwLength = sizeof(MEMORYSTATUSEX);
@@ -77,8 +74,7 @@ DWORDLONG memory::current_virtual()
 /**
  * Get the remaning available physical memory.
  */
-DWORDLONG memory::current_physical()
-{
+unsigned long long memory::current_physical() {
 #ifdef OS_WIN
     MEMORYSTATUSEX memInfo;
     memInfo.dwLength = sizeof(MEMORYSTATUSEX);
@@ -101,8 +97,7 @@ DWORDLONG memory::current_physical()
 /**
  * Get the virtual memory used by the current process.
  */
-SIZE_T memory::process_current_virtual()
-{
+unsigned long long memory::process_current_virtual() {
 #ifdef OS_WIN
     PROCESS_MEMORY_COUNTERS_EX pmc;
     GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS*)&pmc, sizeof(pmc));
@@ -111,23 +106,30 @@ SIZE_T memory::process_current_virtual()
 #endif
 
 #ifdef OS_NIX
-    //
+    return -1;
 #endif
 }
 
 /**
  * Get the physical memory used by the current process.
  */
-SIZE_T memory::process_current_physical()
-{
+unsigned long long memory::process_current_physical() {
 #ifdef OS_WIN
     PROCESS_MEMORY_COUNTERS_EX pmc;
     GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS*)&pmc, sizeof(pmc));
 
     return pmc.WorkingSetSize;
-#endif
-
-#ifdef OS_NIX
-    //
+#elif OS_NIX
+    long rss = 0L;
+    FILE* fp = NULL;
+    if ( (fp = fopen( "/proc/self/statm", "r" )) == NULL )
+        return (size_t)0L;      /* Can't open? */
+    if ( fscanf( fp, "%*s%ld", &rss ) != 1 )
+    {
+        fclose( fp );
+        return (size_t)0L;      /* Can't read? */
+    }
+    fclose( fp );
+    return (size_t)rss * (size_t)sysconf( _SC_PAGESIZE);
 #endif
 }
