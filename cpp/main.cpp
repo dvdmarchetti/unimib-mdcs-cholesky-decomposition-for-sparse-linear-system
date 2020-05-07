@@ -10,39 +10,58 @@
 #include <memory_xplatform.h>
 
 #ifdef DEBUG
-#define D(x) (std::cerr << x << std::endl)
+    #define D(x) (std::cerr << x << std::endl)
 #else
-#define D(x) do{}while(0)
+    #define D(x) do{}while(0)
 #endif
 
 #define CSV_EOL "\n"
-#define CSV_EOL "\n"
 
+#if defined(_WIN32) || defined(__CYGWIN__)
+    #define OUTPUT_FILE "windows-output.csv"
+#elif defined(__linux__) || defined(unix) || defined(__unix__) || defined(__unix)
+    #define OUTPUT_FILE "unix-output.csv"
+#else
+    #error Unknown environment!
+#endif
+
+typedef unsigned long long ull;
 typedef Eigen::SparseMatrix<double> SpMat;
 
-std::ofstream output;
+struct result {
+    unsigned int size;
+    ull memory_delta;
+    std::chrono::duration<double> solve_time;
+    double relative_error;
+};
 
-void analyze_matrix(std::string filename);
+result analyze_matrix(std::string filename);
+std::ostream& operator<<(std::ostream& stream, const result& r);
 
 int main() {
-    output.open("output.csv", std::ofstream::out);
+    result _result;
+    std::ofstream output(OUTPUT_FILE, std::ofstream::out);
+
+    // Write headers
     output << "filename" << ","
         << "size" << ","
-        << "proc_memory_start" << ","
-        << "proc_memory_end" << ","
-        << "b_time" << ","
-        << "chol_time" << ","
+        << "memory_delta" << ","
+        << "solve_time" << ","
         << "relative_error" << CSV_EOL;
 
-    std::string path = "matrix";
-    for (const auto & entry : std::filesystem::directory_iterator(path)) {
+    std::string path = "../matlab/matrix_mtx";
+    for (const auto& entry : std::filesystem::directory_iterator(path)) {
         if (entry.path().extension() == ".mtx") {
             if (! output.is_open()) {
-                output.open("output.csv", std::ofstream::app);
+                output.open(OUTPUT_FILE, std::ofstream::app);
             }
 
             std::cout << entry.path() << std::endl;
-            analyze_matrix(entry.path().string());
+            _result = analyze_matrix(entry.path().string());
+
+            D("Writing output...");
+            output << entry.path().stem() << "," << _result << CSV_EOL;
+            D("");
 
             output.close();
         }
@@ -51,9 +70,21 @@ int main() {
     return 0;
 }
 
-void analyze_matrix(std::string filename) {
-    unsigned long long start_tot_virtual, start_proc_virtual, start_proc_physical, start_tot_physical,
-                       end_tot_virtual, end_proc_virtual, end_proc_physical, end_tot_physical;
+/**
+ * Analyze a single matrix given it's filename
+ * The matrix will be imported assuming it's in .mtx format.
+ *
+ * @param std::string filename
+ * @return result
+ */
+result analyze_matrix(std::string filename) {
+    result r;
+    ull start_tot_virtual, start_proc_virtual, start_proc_physical, start_tot_physical,
+        end_tot_virtual, end_proc_virtual, end_proc_physical, end_tot_physical;
+
+    SpMat A;
+    D("Loading matrix file: " << filename);
+    Eigen::loadMarket(A, filename);
 
     D("Memory Usage (proc/total):");
     start_proc_virtual = memory::process_current_virtual();
@@ -64,17 +95,11 @@ void analyze_matrix(std::string filename) {
     D("> Physical: " << start_proc_physical << " / " << start_tot_physical);
     D("");
 
-    SpMat A;
-    D("Loading matrix file: " << filename);
-    Eigen::loadMarket(A, filename);
-
     D("Solve:");
     D("> Calculating b vector...");
-    auto b_start = std::chrono::high_resolution_clock::now();
     Eigen::VectorXd x_es = Eigen::VectorXd::Ones(A.rows());
     Eigen::VectorXd b(A.rows());
     b = A*x_es;
-    auto b_finish = std::chrono::high_resolution_clock::now();
 
     D("> Applying CholeskySimplicial solver...");
     auto chol_start = std::chrono::high_resolution_clock::now();
@@ -92,22 +117,32 @@ void analyze_matrix(std::string filename) {
     D("> Physical: " << end_proc_physical << " / " << end_tot_physical);
     D("");
 
-    std::chrono::duration<double> b_time = b_finish - b_start;
-    std::chrono::duration<double> chol_time = chol_finish - chol_start;
+    r.size = A.rows();
+    r.memory_delta = end_proc_virtual - start_proc_virtual;
+    r.solve_time = chol_finish - chol_start;
+    r.relative_error = (x_ap - x_es).norm() / x_es.norm();
 
-    double relative_error = (x_ap - x_es).norm() / x_es.norm();
     D("Results");
-    D("> Timing (b/chol/total) in seconds: " << b_time.count() << " / " << chol_time.count() << " / " << (b_time + chol_time).count());
-    D("> Relative error: " << relative_error);
+    D("> Solve time in seconds: " << r.solve_time.count());
+    D("> Relative error: " << r.relative_error);
     D("");
 
-    D("Writing output...");
-    output << filename << ","
-        << A.rows() << ","
-        << start_proc_virtual << ","
-        << end_proc_virtual << ","
-        << b_time.count() << ","
-        << chol_time.count() << ","
-        << relative_error << CSV_EOL;
-    D("");
+    return r;
+}
+
+/**
+ * Override the << operator to allow an easy print of
+ * the results struct to stdout or output file.
+ *
+ * @params std::ostream& stream
+ * @params const result& r
+ * @return std::ostream&
+ */
+std::ostream& operator<<(std::ostream& stream, const result& r) {
+    stream << r.size << ","
+        << r.memory_delta << ","
+        << r.solve_time.count() << ","
+        << r.relative_error;
+
+    return stream;
 }

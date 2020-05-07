@@ -4,12 +4,12 @@
 #include <iostream>
 #include <set>
 
-#ifdef _WIN32
-#define OS_WIN
-#endif
-
-#ifdef __linux__
-#define OS_NIX
+#if defined(_WIN32) || defined(__CYGWIN__)
+    #define OS_WIN
+#elif defined(__linux__) || defined(unix) || defined(__unix__) || defined(__unix)
+    #define OS_NIX
+#else
+    #error Unknown environment!
 #endif
 
 #ifdef OS_WIN
@@ -18,8 +18,8 @@
 #endif
 
 #ifdef OS_NIX
-#include "sys/types.h"
-#include "sys/sysinfo.h"
+#include <sys/types.h>
+#include <sys/sysinfo.h>
 #endif
 
 namespace memory

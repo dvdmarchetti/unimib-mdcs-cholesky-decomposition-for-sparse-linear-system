@@ -1,43 +1,46 @@
-%%% start elaborate
-% memory
-profile clear
-profile -memory on;
-setpref('profiler','showJitLines',1);
-[user, sys] = memory ;
-mStart = user.MemUsedMATLAB ; % memoria iniziale
-%feature memstats
-tic
-%[usr, sys] = memory;
-%usr.MemUsedMATLAB
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function [rows,memory_delta,solve_time,relative_error] = chol_solve(filename, debug)
+%SOLVE Summary of this function goes here
+%   Detailed explanation goes here
 
-disp('Reading input');  % printf
-load(fullfile('', 'Matrici', 'ex15.mat'), "Problem");   % carico matrice
+if (nargin == 1)
+    debug = 0;
+end
 
-% creo variabile Problem con il file all'interno
-disp('Calculate Cholesky');
-R = chol(Problem.A);    % matrice (file senza descrizioni)
+[user] = memory;
+proc_memory_start = user.MemUsedMATLAB ; % memoria iniziale
 
+if debug
+    disp('Reading input file:' + filename); 
+end
+load(fullfile('', 'matrix_mat', filename), "Problem");
 
-disp('Fill solution with ones');
+rows = size(Problem.A, 1);
+
+if debug
+    disp('Fill solution with ones');
+end
 x_es = ones(size(Problem.A, 1), 1); % creo vettori 1s
 
-disp('Calculate b');
-b = Problem.A*x_es;     % vettore termini noti
+if debug
+    disp('Calculate b');
+end
+b = Problem.A*x_es;
 
-disp('Find solution');
-x_ap = R\(R'\b);    % cholesky.matlab official documentation
+if debug
+    disp('Calculate Cholesky');
+end
 
-err = norm(x_ap - x_es)/norm(x_es);
-disp(['Relative error: ', num2str(err)]);   %errore relativo
+tic
+R = chol(Problem.A);
+x_ap = R\(R'\b); % cholesky.matlab official documentation
+solve_time = toc;
 
-% cholesky_benchmark(fullfile('..', 'matrix_matlab'));
-toc
-format short eng;
-% memUsed
-%memory
-[user, sys] = memory ;
-mtotal = user.MemUsedMATLAB - mStart;
-disp('Total mem: ');  disp(mtotal); % memoria usata
-profile report
-profile off
+relative_error = norm(x_ap - x_es)/norm(x_es);
+if debug
+    disp(['Relative error: ', num2str(relative_error)]);
+end
+
+[user] = memory;
+memory_delta = user.MemUsedMATLAB - proc_memory_start;
+% disp('Total mem: ' + proc_memory_end); % memoria usata
+end
