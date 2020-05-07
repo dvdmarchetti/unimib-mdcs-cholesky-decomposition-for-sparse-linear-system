@@ -10,9 +10,7 @@ unsigned long long memory::total_virtual() {
     GlobalMemoryStatusEx(&memInfo);
 
     return memInfo.ullTotalPageFile;
-#endif
-
-#ifdef OS_NIX
+#elif defined(OS_NIX)
     struct sysinfo memInfo;
     sysinfo(&memInfo);
 
@@ -34,9 +32,7 @@ unsigned long long memory::total_physical() {
     GlobalMemoryStatusEx(&memInfo);
 
     return memInfo.ullTotalPhys;
-#endif
-
-#ifdef OS_NIX
+#elif defined(OS_NIX)
     struct sysinfo memInfo;
     sysinfo(&memInfo);
 
@@ -57,9 +53,7 @@ unsigned long long memory::current_virtual() {
     GlobalMemoryStatusEx(&memInfo);
 
     return memInfo.ullTotalPageFile - memInfo.ullAvailPageFile;
-#endif
-
-#ifdef OS_NIX
+#elif defined(OS_NIX)
     struct sysinfo memInfo;
     sysinfo(&memInfo);
 
@@ -81,9 +75,7 @@ unsigned long long memory::current_physical() {
     GlobalMemoryStatusEx(&memInfo);
 
     return memInfo.ullTotalPhys - memInfo.ullAvailPhys;
-#endif
-
-#ifdef OS_NIX
+#elif defined(OS_NIX)
     struct sysinfo memInfo;
     sysinfo(&memInfo);
 
@@ -103,10 +95,8 @@ unsigned long long memory::process_current_virtual() {
     GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS*)&pmc, sizeof(pmc));
 
     return pmc.PrivateUsage;
-#endif
-
-#ifdef OS_NIX
-    return -1;
+#elif defined(OS_NIX)
+    return 0L;
 #endif
 }
 
@@ -119,17 +109,20 @@ unsigned long long memory::process_current_physical() {
     GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS*)&pmc, sizeof(pmc));
 
     return pmc.WorkingSetSize;
-#elif OS_NIX
+#elif defined(OS_NIX)
     long rss = 0L;
     FILE* fp = NULL;
-    if ( (fp = fopen( "/proc/self/statm", "r" )) == NULL )
-        return (size_t)0L;      /* Can't open? */
-    if ( fscanf( fp, "%*s%ld", &rss ) != 1 )
-    {
-        fclose( fp );
-        return (size_t)0L;      /* Can't read? */
+
+    if ((fp = fopen("/proc/self/statm", "r")) == NULL) {
+        return (size_t)0L;
     }
-    fclose( fp );
-    return (size_t)rss * (size_t)sysconf( _SC_PAGESIZE);
+
+    if (fscanf(fp, "%*s%ld", &rss) != 1) {
+        fclose(fp);
+        return (size_t) 0L;
+    }
+
+    fclose(fp);
+    return (size_t) rss * (size_t) sysconf(_SC_PAGESIZE);
 #endif
 }

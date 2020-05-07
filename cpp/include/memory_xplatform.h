@@ -20,6 +20,7 @@
 #ifdef OS_NIX
 #include <sys/types.h>
 #include <sys/sysinfo.h>
+#include <unistd.h>
 #endif
 
 namespace memory
