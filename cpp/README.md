@@ -29,7 +29,8 @@ make clean && make release
 In both cases the binaries will be placed in the corresponding subfolder inside `build`.
 
 ### Usage
-Before the actual execution, make sure to put the mtx files in the matrix folder. If you want to skip a matrix file for a particular execution, prefix the filename with an underscore(`_`).
+Before the actual execution, make sure to convert the mat files in the matlab folder to mtx with the given script.
+If you want to skip a matrix file for a particular execution, move it in any subfolder.
 
 To run the program:
 ```sh
@@ -47,8 +48,6 @@ The program generates a CSV output that can be further analyzed and compared.
 The output is composed with the following informations gathered at runtime:
 - **filename**: the name of the matrix file (includes the folder name prefix).
 - **size**: the number of rows.
-- **proc_memory_start**: the process memory in use at the start of the script (in bytes).
-- **proc_memory_end**: the process memory in use after the solution has been calculated with cholesky (in bytes).
-- **b_time**: time taken to compute the b vector provided to the solver (in seconds).
+- **memory_delta**: the process memory used to calculate the cholesky solution (in bytes).
 - **chol_time**: time taken to solve the system (cholesky decomposition + solution calculation) (in seconds).
 - **relative_error**: the relative error between the calculated solution and the exact ones solution.

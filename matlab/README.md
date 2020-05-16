@@ -16,12 +16,12 @@ The needed matrix .mat files can be downloaded from the following links:
 ### Matrix conversion
 Given the issue with Eigen explained in `cpp/README.md`, the .mtx files needs to be regenerated once.
 
-To do so, after all the files are placed in the `matrix` folder, open matlab in the current directory and execute the file `convert_mat_mtx.m`.
+To do so, after all the files are placed in the `matrix_mat` folder, open matlab in the current directory and execute the file `convert_mat_mtx.m`.
 
-The process will take quite a while because all the .mat files needs to be read and fully saved to file from scratch. Once the conversion is complete, the files can be copied in the `cpp/matrix` folder to let the c++ program solve them.
+The process will take quite a while because all the .mat files needs to be read and fully saved to file from scratch. Once the conversion is complete, the files in `matrix_mtx` folder will be used by the c++ program.
 
 ### Usage
-TODO.
+To execute the program open matlab in the current working directory and execute the `main.m` file.
 
 ### Output
 TODO.
