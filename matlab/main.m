@@ -18,7 +18,7 @@ for K = 1 : filesCount
     [size, memory_delta, solve_time, relative_error] = chol_solve(filename, 1);
     
     results = [results(1:K,:); [strtok(filename, '.'),size,memory_delta,solve_time,relative_error]];
-    clearvars s ms me bt ct re;
+    clearvars size ms me bt ct re;
 end
 
 profile off;

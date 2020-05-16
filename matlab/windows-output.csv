@@ -1,4 +1,4 @@
-filename,size,memory_delta,chol_time,relative_error
+filename,size,memory_delta,solve_time,relative_error
 cfd1,70656,1302999040,4.4389,2.961e-13
 cfd2,123440,2586533888,22.8256,7.941e-13
 ex15,6867,4136960,0.36117,8.5736e-07

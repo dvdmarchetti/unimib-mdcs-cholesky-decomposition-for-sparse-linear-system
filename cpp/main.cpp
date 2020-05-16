@@ -49,6 +49,7 @@ int main() {
         << "solve_time" << ","
         << "relative_error" << CSV_EOL;
 
+    // Look for matrix in ../matlab/matrix_mtx folder
     std::string path = "../matlab/matrix_mtx";
     for (const auto& entry : std::filesystem::directory_iterator(path)) {
         if (entry.path().extension() == ".mtx") {
@@ -82,10 +83,11 @@ result analyze_matrix(std::string filename) {
     ull start_tot_virtual, start_proc_virtual, start_proc_physical, start_tot_physical,
         end_tot_virtual, end_proc_virtual, end_proc_physical, end_tot_physical;
 
-    SpMat A;
+    SpMat A; // Eigen::SparseMatrix<double>
     D("Loading matrix file: " << filename);
     Eigen::loadMarket(A, filename);
 
+    // Debug memory usage to cout
     D("Memory Usage (proc/total):");
     start_proc_virtual = memory::process_current_virtual();
     start_tot_virtual = memory::total_virtual();
