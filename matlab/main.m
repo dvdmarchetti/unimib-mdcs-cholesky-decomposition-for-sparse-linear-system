@@ -4,9 +4,6 @@ if ~(isunix || ispc)
     exit;
 end
 
-profile clear;
-profile -memory on;
-
 path = fullfile('matrix_mat', '*.mat');
 files = dir(path);
 filesCount = length(files);
@@ -18,13 +15,11 @@ for K = 1 : filesCount
     [size, memory_delta, solve_time, relative_error] = chol_solve(filename, 1);
     
     results = [results(1:K,:); [strtok(filename, '.'),size,memory_delta,solve_time,relative_error]];
-    clearvars size ms me bt ct re;
+    clearvars filename size memory_delta solve_time relative_error;
 end
 
-profile off;
 if isunix
     writematrix(results, 'unix-output.csv');
 elseif ispc
     writematrix(results, 'windows-output.csv');
 end
-
