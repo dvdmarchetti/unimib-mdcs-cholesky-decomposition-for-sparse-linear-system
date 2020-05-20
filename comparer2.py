@@ -1,8 +1,6 @@
-from bokeh.layouts import gridplot, row
+from bokeh.layouts import gridplot
 from bokeh.models import NumeralTickFormatter, HoverTool
-from bokeh.models.tickers import FixedTicker
 from bokeh.plotting import figure, output_file, show
-import numpy as np
 import pandas as pd
 
 
