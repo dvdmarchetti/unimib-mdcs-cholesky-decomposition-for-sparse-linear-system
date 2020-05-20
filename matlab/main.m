@@ -8,7 +8,7 @@ path = fullfile('matrix_mat', '*.mat');
 files = dir(path);
 filesCount = length(files);
 
-results = ["filename", "size", "memory_delta", "chol_time", "relative_error"];
+results = ["filename", "size", "memory_delta", "solve_time", "relative_error"];
 
 for K = 1 : filesCount
     filename = convertCharsToStrings(files(K).name);
