@@ -1,23 +1,16 @@
 import math
 import os
 
+# import matplotlib
+# matplotlib.use('WebAgg')
+
+
+# from adjustText import adjust_text
 import matplotlib
-matplotlib.use('WebAgg')
-
-
-from adjustText import adjust_text
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
-
-
-# def label_point(x, y, val, ax):
-#     points = pd.concat({'x': x, 'y': y, 'val': val}, axis=1)
-#     texts = []
-#     for i, point in points.iterrows():
-#         texts.append(ax.text(point['x'], point['y'], str(point['val'])))
-#     # adjust_text(texts)
 
 
 # Results to parse
@@ -25,6 +18,7 @@ results = [
     'cpp/windows-output.csv',
     'cpp/unix-output.csv',
     'matlab/windows-output.csv',
+    'matlab/unix-output.csv',
 ]
 
 # Build single csv file
@@ -42,18 +36,39 @@ results = pd.concat(frames)
 
 metrics = [
     {
-        'df': pd.DataFrame({ 'filename': results['filename'], 'size': results['size'], 'metric': 'memory', 'value': results['memory_delta'], 'source': results['source'], 'os': results['os'] }),
+        'df': pd.DataFrame({
+            'filename': results['filename'],
+            'size': results['size'],
+            'metric': 'memory',
+            'value': results['memory_delta'],
+            'source': results['source'],
+            'os': results['os']
+        }),
         'label': 'Process Memory (in Bytes)'
     },
     {
-        'df': pd.DataFrame({ 'filename': results['filename'], 'size': results['size'], 'metric': 'error', 'value': results['relative_error'], 'source': results['source'], 'os': results['os'] }),
+        'df': pd.DataFrame({
+            'filename': results['filename'],
+            'size': results['size'],
+            'metric': 'error',
+            'value': results['relative_error'],
+            'source': results['source'],
+            'os': results['os'] }),
         'label': 'Relative Error'
     },
     {
-        'df': pd.DataFrame({ 'filename': results['filename'], 'size': results['size'], 'metric': 'time', 'value': results['solve_time'], 'source': results['source'], 'os': results['os'] }),
-        'label': 'Cholesky Resolution Time (in seconds)',
+        'df': pd.DataFrame({ 
+            'filename': results['filename'],
+            'size': results['size'],
+            'metric': 'time',
+            'value': results['solve_time'],
+            'source': results['source'],
+            'os': results['os']
+        }),
+        'label': 'Cholesky Resolution Time (in seconds)'
     }
 ]
+
 
 # Plot style
 sns.set_style('darkgrid')
