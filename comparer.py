@@ -1,6 +1,9 @@
 import math
 import os
 
+import matplotlib
+matplotlib.use('WebAgg')
+
 
 from adjustText import adjust_text
 import matplotlib.pyplot as plt
@@ -9,16 +12,13 @@ import pandas as pd
 import seaborn as sns
 
 
-def label_point(x, y, val, ax):
-    points = pd.concat({'x': x, 'y': y, 'val': val}, axis=1)
-    texts = []
-    for i, point in points.iterrows():
-        texts.append(ax.text(point['x'], point['y'], str(point['val'])))
-    adjust_text(texts)
+# def label_point(x, y, val, ax):
+#     points = pd.concat({'x': x, 'y': y, 'val': val}, axis=1)
+#     texts = []
+#     for i, point in points.iterrows():
+#         texts.append(ax.text(point['x'], point['y'], str(point['val'])))
+#     # adjust_text(texts)
 
-
-# Plot style
-sns.set_style('darkgrid')
 
 # Results to parse
 results = [
@@ -38,47 +38,45 @@ for filename in results:
     frames.append(frame)
 
 # Concatenate all results
-data = pd.concat(frames)
-print(data)
+results = pd.concat(frames)
 
 metrics = [
     {
-        'df': pd.DataFrame({ 'size': data['size'], 'metric': 'memory', 'value': data['memory_delta'], 'source': data['source'], 'os': data['os'] }),
+        'df': pd.DataFrame({ 'filename': results['filename'], 'size': results['size'], 'metric': 'memory', 'value': results['memory_delta'], 'source': results['source'], 'os': results['os'] }),
         'label': 'Process Memory (in Bytes)'
     },
     {
-        'df': pd.DataFrame({ 'size': data['size'], 'metric': 'error', 'value': data['relative_error'], 'source': data['source'], 'os': data['os'] }),
+        'df': pd.DataFrame({ 'filename': results['filename'], 'size': results['size'], 'metric': 'error', 'value': results['relative_error'], 'source': results['source'], 'os': results['os'] }),
         'label': 'Relative Error'
     },
     {
-        'df': pd.DataFrame({ 'size': data['size'], 'metric': 'time', 'value': data['solve_time'], 'source': data['source'], 'os': data['os'] }),
+        'df': pd.DataFrame({ 'filename': results['filename'], 'size': results['size'], 'metric': 'time', 'value': results['solve_time'], 'source': results['source'], 'os': results['os'] }),
         'label': 'Cholesky Resolution Time (in seconds)',
     }
 ]
 
-# Print faceted grid plots (3x2)
-dfs = pd.concat([metrics[0]['df'], metrics[1]['df'], metrics[2]['df']])
-g = sns.FacetGrid(dfs, col='os', row='metric', hue='source', palette="Set1")
-g = g.map(sns.lineplot, 'size', 'value', marker='o')
-g.add_legend().set_xlabels('Size')
+# Plot style
+sns.set_style('darkgrid')
 
-for i, ax in enumerate(g.axes.flat):
+# Print faceted grid plots (3x2)
+# Each column is a different operating system, each row is a different metric
+data = pd.concat([metric['df'] for metric in metrics])
+graph = sns.FacetGrid(data, col='source', row='metric', hue='os', palette="Set1", sharey=False, sharex=False)
+graph = graph.map(sns.lineplot, 'size', 'value', marker='o', ci=None)
+graph.add_legend().set_xlabels('Size')
+
+for i, ax in enumerate(graph.axes.flat):
     metric = metrics[int(i/2)]
     ax.set_ylabel(metric['label'])
     ax.set_yscale('log')
 
-# Plot with annotations
-fig, axes = plt.subplots(3,1)
-fig.set_figheight(15)
-fig.set_figwidth(15)
-axes = axes.reshape(-1)
-[ax.set(yscale='log') for ax in axes]
-for i, metric in enumerate(metrics):
-    ax = sns.lineplot(x='size', y='value', hue='os', palette='Set1', data=pd.melt(metric['df'], ['size', 'source', 'os', 'metric']), marker="o", ax=axes[i])
+graph = sns.FacetGrid(data, col='os', row='metric', hue='source', palette="Set1", sharey=False, sharex=False)
+graph = graph.map(sns.lineplot, 'size', 'value', marker='o', ci=None)
+graph.add_legend().set_xlabels('Size')
 
-    ax.set_xlabel('Size')
+for i, ax in enumerate(graph.axes.flat):
+    metric = metrics[int(i/2)]
     ax.set_ylabel(metric['label'])
-
-    # label_point(metric['df']['size'], metric['df']['value'], metric['df']['value'], ax)
+    ax.set_yscale('log')
 
 plt.show()
