@@ -4,29 +4,6 @@ from bokeh.plotting import figure, output_file, show
 import pandas as pd
 
 
-# Results to parse
-results = [
-    'cpp/windows-output.csv',
-    'cpp/unix-output.csv',
-    'matlab/windows-output.csv',
-    'matlab/unix-output.csv',
-]
-
-# Build single csv file
-frames = []
-for filename in results:
-    frame = pd.read_csv(filename)
-    # Add source column
-    path = filename.split('/')
-    frame['source'] = path[0]
-    frame['os'] = path[1].split('-')[0]
-    frames.append(frame)
-
-# Concatenate all results
-results = pd.concat(frames)
-df = pd.DataFrame(results).sort_values('size')
-
-
 Palette = ['#2970b0', '#b92731']
 
 def plot(df, x=None, y=None, title=None, group=None, x_axis_label=None, y_axis_label=None, hue=None, unit=''):
@@ -49,11 +26,13 @@ def plot(df, x=None, y=None, title=None, group=None, x_axis_label=None, y_axis_l
             y_axis_type='log',
         )
 
-        for (_, subdf_slice) in subdf.groupby([hue]):
-            p.line(x=x, y=y, line_width=2, color=Palette[i], legend_label=subdf_slice[hue][0], source=subdf_slice)
-            p.circle(x=x, y=y, size=10, color=Palette[i], legend_label=subdf_slice[hue][0], source=subdf_slice)
+        # Plot each unique value in the hue param column with a different color
+        for (_, df_group) in subdf.groupby([hue]):
+            p.line(x=x, y=y, line_width=2, color=Palette[i], legend_label=df_group[hue][0], source=df_group)
+            p.circle(x=x, y=y, size=10, color=Palette[i], legend_label=df_group[hue][0], source=df_group)
             i += 1
 
+        # Customize figure aesthetics
         p.title.text_font_size = '18pt'
         p.background_fill_color = '#eaeaf2'
 
@@ -80,16 +59,40 @@ def plot(df, x=None, y=None, title=None, group=None, x_axis_label=None, y_axis_l
 
     return plots
 
+
+# Results to parse
+results = [
+    'cpp/windows-output.csv',
+    'cpp/unix-output.csv',
+    'matlab/windows-output.csv',
+    'matlab/unix-output.csv',
+]
+
+# Build single csv file
+frames = []
+for filename in results:
+    frame = pd.read_csv(filename)
+    # Add source column
+    path = filename.split('/')
+    frame['source'] = path[0]
+    frame['os'] = path[1].split('-')[0]
+    frames.append(frame)
+
+# Concatenate all results
+df = pd.DataFrame(pd.concat(frames)).sort_values('size')
+
 output_file('results.html')
 
+# Build plots
 memory = plot(df, x='size', y='memory_delta', title='Memory Usage (bytes)', group='os', hue='source', unit='Byte')
 time = plot(df, x='size', y='solve_time', title='Cholesky Resolution Time (seconds)', group='os', hue='source', unit='s')
 error = plot(df, x='size', y='relative_error', title='Relative Error', group='os', hue='source')
 
+# Arrage plots in a grid
 grid = gridplot(
     [memory, time, error],
     sizing_mode='stretch_width'
 )
 
+# Display the result
 show(grid)
-exit()
