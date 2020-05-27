@@ -1,4 +1,2 @@
-seaborn
-numpy
 pandas
-matplotlib
+bokeh
