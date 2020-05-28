@@ -81,7 +81,9 @@ for filename in results:
 # Concatenate all results
 df = pd.DataFrame(pd.concat(frames)).sort_values('size')
 
-output_file('results.html')
+
+## Build results per os plots
+output_file('results_per_os.html')
 
 # Build plots
 memory = plot(df, x='size', y='memory_delta', title='Memory Usage (bytes)', group='os', hue='source', unit='Byte')
@@ -89,10 +91,18 @@ time = plot(df, x='size', y='solve_time', title='Cholesky Resolution Time (secon
 error = plot(df, x='size', y='relative_error', title='Relative Error', group='os', hue='source')
 
 # Arrage plots in a grid
-grid = gridplot(
-    [memory, time, error],
-    sizing_mode='stretch_width'
-)
+grid = gridplot([memory, time, error], sizing_mode='stretch_width')
+show(grid)
 
-# Display the result
+
+## Build results per implementation plots
+output_file('results_per_implementation.html')
+
+# Build plots
+memory = plot(df, x='size', y='memory_delta', title='Memory Usage (bytes)', group='source', hue='os', unit='Byte')
+time = plot(df, x='size', y='solve_time', title='Cholesky Resolution Time (seconds)', group='source', hue='os', unit='s')
+error = plot(df, x='size', y='relative_error', title='Relative Error', group='source', hue='os')
+
+# Arrage plots in a grid
+grid = gridplot([memory, time, error], sizing_mode='stretch_width')
 show(grid)

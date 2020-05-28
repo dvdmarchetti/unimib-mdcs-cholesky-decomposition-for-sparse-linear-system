@@ -5,7 +5,11 @@
 \usepackage{blindtext}
 \usepackage{enumitem}
 \usepackage{float}
+\usepackage{hyperref}
+\usepackage{cleveref}
 \usepackage{xcolor}   % for \textcolor
+\usepackage[font=small,labelfont=bf,skip=4pt]{caption}
+\setlength{\belowcaptionskip}{-10pt}
 \usepackage{listings}
 \lstset{
   basicstyle=\ttfamily,
@@ -54,6 +58,7 @@ Lo scopo di questo progetto è di studiare l'implementazione del metodo di Chole
 
 Il confronto avverrà in termini di tempo, accuratezza, impiego della memoria e anche facilità d'uso sia in ambiente Linux che Windows, eseguendo il codice su diverse matrici sparse derivate da problemi reali e raccolte nella \textbf{SuiteSparse Matrix Collection}.
 
+\newpage
 \section{Analisi dell'implementazione}
 
 \subsection{MATLAB}
@@ -89,48 +94,118 @@ Eigen è in sviluppo attivo, tuttavia, alcuni moduli sono marcati come deprecati
 \subsubsection{Problemi}
 Durante lo sviluppo, l'utilizzo di una classe deprecata ha inizialmente rallentato lo sviluppo. Infatti, delle matrici importate tramite \lstinline{MarketIO} veniva ignorato il fatto che fossero salvate come simmetriche o meno.
 
-La soluzione a questo problema è stata messa in pratica modificando lo script matlab \lstinline{mmwrite} di conversione per file \lstinline{.mat} in \lstinline{.mtx} e rigenerando le matrici a partire dai file \lstinline{.mat}, assicurandosi che venissero salvati correttamente tutti gli elementi della matrice.
+Questo inconveniente è stato risolto modificando lo script di conversione MATLAB \lstinline{mmwrite} per trasformare file \lstinline{.mat} in \lstinline{.mtx} e rigenerando le matrici assicurandosi che tutti gli elementi venissero salvati correttamente.
+
+Tuttavia, questa trasformazione aggiuntiva comporta uno spreco di spazio su disco per memorizzare il doppio dei valori rispetto ad un semplice indicatore che specifiche qualora la matrice sia simmetrica, e di tempo per la lettura dell'intera matrice da file.
 
 \subsubsection{Licenza}
 Eigen è un software gratuito ed open-source rilasciato con licenza Mozilla Public License 2.0 (MPL2: simple weak copyleft license) dalla versione 3.1.1.
 
+\newpage
 \section{Specifiche hardware}
+La piattaforma utilizzata per la produzione dei risultati riportati nelle \cref{section-results-impl,section-results-os}, è composta come segue:
+\begin{itemize}
+	\item \textbf{CPU}: AMD Ryzen 5 3600 - 6 Core / 12 Threads - 3.60Ghz /4.20Ghz
+	\item \textbf{RAM}: Crucial Ballistix DDR4-3000C15 2*8Gb (16Gb) a 3800MHz
+	\item \textbf{HDD}: Western Digital Green 1TB HDD
+	\item \textbf{GPU}: Sapphire RX 580 Pulse (8GB VRam)
+\end{itemize}
 
-\section{Risultati}
+\noindent
+Il disco utilizzato per l'esecuzione in ambiente Windows è un \textbf{SSD Samsung 850 EVO (250Gb)}, mentre Linux è installato su un \textbf{NVMe Sabrent (256Gb)}.
+
+\newpage
+\section{Risultati per sistema operativo}
+\label{section-results-impl}
 
 \subsection{Windows}
 \subsubsection*{Tempo}
+All'incremento delle dimensioni della matrice di input non corrisponde un incremento lineare ne costante in termini di tempo.
+Ciononostante, i tempi di esecuzione nell'implementazione in MATLAB risultano essere meno variabili rispetto alla controparte in C++).
 \begin{figure}[H]
-	\makebox[\textwidth][c]{\includegraphics[width=1.4\linewidth]{windows_solve.png}}
+	\makebox[\textwidth][c]{\includegraphics[width=1.3\linewidth]{windows_solve.png}}
 \end{figure}
 
-\subsubsection*{Errore relativo}
+\subsubsection*{Errore Relativo}
+Entrambe le implementazioni presentano un errore relativo molto simile. Al crescere della dimensione della matrice, in C++ l'errore relativo sembra stabilizzarsi tra $10^{-10}$ e $10^{-12}$.
 \begin{figure}[H]
-	\makebox[\textwidth][c]{\includegraphics[width=1.4\linewidth]{windows_error.png}}
+	\makebox[\textwidth][c]{\includegraphics[width=1.3\linewidth]{windows_error.png}}
 \end{figure}
 
 \subsubsection*{Memoria}
+Come illustrato in \cref{fig:windows-memory}, l'implementazione in C++ occupa molta meno memoria rispetto a quella in MATLAB, in particolare al crescere della dimensione della matrice e del numero di elementi contenuti in essa.
+
+Difatti, tutte le matrici analizzate in MATLAB per le quali non è presente un risultato nel grafico, durante la decomposizione di Cholesky hanno comportato un errore \lstinline{Out of memory}.
 \begin{figure}[H]
-	\makebox[\textwidth][c]{\includegraphics[width=1.4\linewidth]{windows_memory.png}}
+	\makebox[\textwidth][c]{\includegraphics[width=1.3\linewidth]{windows_memory.png}}
+	\label{fig:windows-memory}
 \end{figure}
 
 \subsection{Linux}
 \subsubsection*{Tempo}
+Si nota che, all'incremento delle dimensioni della matrice di input, non si rileva un incremento lineare ne costante in termini di tempo (in un punto anche decremento), e non si rilevano differenze eccessive tra le librerie MatLab e C++ (seppure Matlab abbia tempo meno ''disperso'' della controparte).
 \begin{figure}[H]
-	\makebox[\textwidth][c]{\includegraphics[width=1.4\linewidth]{unix_solve.png}}
+	\makebox[\textwidth][c]{\includegraphics[width=1.3\linewidth]{unix_solve.png}}
 \end{figure}
 
 \subsubsection*{Errore relativo}
+Si nota che,sia su c++ che con la libreria MatLab, si ha un errore comparabile/quasi uguale per entrambi i metodi, e che dopo un massimo ed un minimo nelle matrici più piccole, l'errore si stabilizza intorno a $10^{-11}$, indipendentemente dalle dimensioni delle matrici che il programma riesce a caricare.
 \begin{figure}[H]
-	\makebox[\textwidth][c]{\includegraphics[width=1.4\linewidth]{unix_error.png}}
+	\makebox[\textwidth][c]{\includegraphics[width=1.3\linewidth]{unix_error.png}}
 \end{figure}
 
 \subsubsection*{Memoria}
+Si nota che la libreria c++ occupa meno memoria rispetto a quella di MatLab sulle matrici più grandi(paragonabile ai risultati windows), e che la memoria occupata non scala linearmente (facendo presumere sia più un fattore di elementi contenuti nelle matrici sparse che di dimensioni?).
 \begin{figure}[H]
-	\makebox[\textwidth][c]{\includegraphics[width=1.4\linewidth]{unix_memory.png}}
+	\makebox[\textwidth][c]{\includegraphics[width=1.3\linewidth]{unix_memory.png}}
 \end{figure}
 
+\newpage
+\section{Risultati per implementazione}
+\label{section-results-os}
+
+\subsection{C++}
+\subsubsection*{Tempo}
+TODO
+\begin{figure}[H]
+	\makebox[\textwidth][c]{\includegraphics[width=1.3\linewidth]{cpp_solve.png}}
+\end{figure}
+
+\subsubsection*{Errore Relativo}
+TODO
+\begin{figure}[H]
+	\makebox[\textwidth][c]{\includegraphics[width=1.3\linewidth]{cpp_error.png}}
+\end{figure}
+
+\subsubsection*{Memoria}
+TODO
+\begin{figure}[H]
+	\makebox[\textwidth][c]{\includegraphics[width=1.3\linewidth]{cpp_memory.png}}
+\end{figure}
+
+\subsection{Matlab}
+\subsubsection*{Tempo}
+TODO
+\begin{figure}[H]
+	\makebox[\textwidth][c]{\includegraphics[width=1.3\linewidth]{matlab_solve.png}}
+\end{figure}
+
+\subsubsection*{Errore Relativo}
+TODO
+\begin{figure}[H]
+	\makebox[\textwidth][c]{\includegraphics[width=1.3\linewidth]{matlab_error.png}}
+\end{figure}
+
+\subsubsection*{Memoria}
+TODO
+\begin{figure}[H]
+	\makebox[\textwidth][c]{\includegraphics[width=1.3\linewidth]{matlab_memory.png}}
+\end{figure}
+
+\newpage
 \section{Conclusioni}
+
+\newpage
 \section{Code}
 
 \end{document}
