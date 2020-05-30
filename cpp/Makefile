@@ -16,7 +16,7 @@ EXE = main
 DBGDIR = build/debug
 DBGEXE = $(DBGDIR)/$(EXE)
 DBGOBJS = $(addprefix $(DBGDIR)/, $(OBJS))
-DBGCFLAGS = -g -O0 -DDEBUG
+DBGCFLAGS = -O0 -DDEBUG -fno-omit-frame-pointer -gdwarf-2
 
 # Release build settings
 RELDIR = build/release
