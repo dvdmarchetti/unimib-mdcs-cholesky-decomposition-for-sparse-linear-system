@@ -113,7 +113,7 @@ Eigen è un software gratuito ed open-source rilasciato con licenza Mozilla Publ
 Riporteremo di seguito le sezioni semplificate delle parti principali di ciascun'implementazione.
 
 \subsection{MATLAB}
-\begin{lstlisting}[language=Matlab,emph={ones},caption=C++: Algoritmo principale,label=fig:code-cpp-algo]
+\begin{lstlisting}[language=Matlab,emph={ones},caption=MATLAB: Algoritmo principale,label=fig:code-cpp-algo]
 function [rows, memory_delta, solve_time, error] = chol_solve(name)
     load(fullfile('', 'matrix_mat', name), "Problem");
 
@@ -165,7 +165,7 @@ result analyze_matrix(std::string filename) {
 }
 \end{lstlisting}
 
-\begin{lstlisting}[language=C++,emph={ull,std},caption=C++: Algoritmo principale,label=fig:code-cpp-algo]
+\begin{lstlisting}[language=C++,emph={ull,std},caption=C++: Struct per la memorizzazione del risultato,label=fig:code-cpp-algo]
 typedef unsigned long long ull;
 struct result {
     unsigned int size;
