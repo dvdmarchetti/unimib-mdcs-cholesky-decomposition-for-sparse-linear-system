@@ -6,12 +6,12 @@ import pandas as pd
 
 Palette = ['#2970b0', '#b92731']
 
-def plot(df, x=None, y=None, title=None, group=None, x_axis_label=None, y_axis_label=None, hue=None, unit=''):
+def plot(df, x=None, y=None, title=None, group=None, x_axis_label=None, y_axis_label=None, hue=None, fmt=''):
     hover_tool = HoverTool(
         tooltips=[
             ('size', '@size'),
             ('matrix', '@filename'),
-            ('value', '@'+y+'{,} '+unit)
+            ('value', '@{}{}'.format(y, fmt))
         ],
         formatters={
             'value': 'printf'
@@ -37,19 +37,21 @@ def plot(df, x=None, y=None, title=None, group=None, x_axis_label=None, y_axis_l
         p.background_fill_color = '#eaeaf2'
 
         p.xaxis.axis_label = 'Size'
-        p.xaxis.axis_label_text_font_size = '13pt'
+        p.xaxis.axis_label_text_font_size = '18pt'
+        p.xaxis.major_label_text_font_size = '12pt'
         p.xaxis[0].formatter = NumeralTickFormatter(format=',')
         p.xgrid.grid_line_color = '#ffffff'
         p.xgrid.grid_line_width = 2
         p.xgrid.minor_grid_line_color = '#ffffff'
-        p.xgrid.minor_grid_line_alpha = 0.5
+        p.xgrid.minor_grid_line_alpha = 0.6
 
         p.yaxis.axis_label = title
-        p.yaxis.axis_label_text_font_size = '13pt'
+        p.yaxis.axis_label_text_font_size = '18pt'
+        p.yaxis.major_label_text_font_size = '12pt'
         p.ygrid.grid_line_color = '#ffffff'
         p.ygrid.grid_line_width = 2
         p.ygrid.minor_grid_line_color = '#ffffff'
-        p.ygrid.minor_grid_line_alpha = 0.5
+        p.ygrid.minor_grid_line_alpha = 0.6
 
         p.legend.location = 'bottom_right'
         p.legend.click_policy = 'hide'
@@ -86,8 +88,8 @@ df = pd.DataFrame(pd.concat(frames)).sort_values('size')
 output_file('results_per_os.html')
 
 # Build plots
-memory = plot(df, x='size', y='memory_delta', title='Memory Usage (bytes)', group='os', hue='source', unit='Byte')
-time = plot(df, x='size', y='solve_time', title='Cholesky Resolution Time (seconds)', group='os', hue='source', unit='s')
+memory = plot(df, x='size', y='memory_delta', title='Memory Usage (bytes)', group='os', hue='source', fmt='{0.000 b}')
+time = plot(df, x='size', y='solve_time', title='Cholesky Resolution Time (seconds)', group='os', hue='source', fmt='{:}')
 error = plot(df, x='size', y='relative_error', title='Relative Error', group='os', hue='source')
 
 # Arrage plots in a grid
@@ -99,8 +101,8 @@ show(grid)
 output_file('results_per_implementation.html')
 
 # Build plots
-memory = plot(df, x='size', y='memory_delta', title='Memory Usage (bytes)', group='source', hue='os', unit='Byte')
-time = plot(df, x='size', y='solve_time', title='Cholesky Resolution Time (seconds)', group='source', hue='os', unit='s')
+memory = plot(df, x='size', y='memory_delta', title='Memory Usage (bytes)', group='source', hue='os', fmt='{0.000 b}')
+time = plot(df, x='size', y='solve_time', title='Cholesky Resolution Time (seconds)', group='source', hue='os', fmt='{:}')
 error = plot(df, x='size', y='relative_error', title='Relative Error', group='source', hue='os')
 
 # Arrage plots in a grid

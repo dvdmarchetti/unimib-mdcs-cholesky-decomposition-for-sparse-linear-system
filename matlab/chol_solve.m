@@ -7,17 +7,25 @@ if (nargin == 1)
 end
 
 if debug
-    disp('Reading input file:' + filename); 
+    disp('Reading input file:' + filename);
 end
 load(fullfile('', 'matrix_mat', filename), "Problem");
 
-rows = size(Problem.A, 1);
+if isunix
+    [~, pid] = system('pgrep MATLAB');
+    [~, mem] = system(['smem | grep ' strtrim(pid) ' | grep -v grep | awk -F "[ ]+" ''{print $6}''']);
 
+    proc_memory_start = str2num(mem) * 1024;
+else
+    [user] = memory;
+    proc_memory_start = user.MemUsedMATLAB;
+end
+
+rows = size(Problem.A, 1);
 if debug
     disp('Fill solution with ones');
 end
-x_es = ones(size(Problem.A, 1), 1);
-
+x_es = ones(rows, 1);
 if debug
     disp('Calculate b');
 end
@@ -27,16 +35,6 @@ if debug
     disp('Calculate Cholesky');
 end
 
-if isunix
-    [~, pid] = system('pgrep MATLAB');
-    [~, mem] = system(['smem | grep ' strtrim(pid) ' | grep -v grep | awk -F "[ ]+" ''{print $6}''']);
-    
-    proc_memory_start = str2num(mem) * 1024;
-else
-    [user] = memory;
-    proc_memory_start = user.MemUsedMATLAB;
-end
-
 tic;
 R = chol(Problem.A);
 x_ap = R\(R'\b); % cholesky.matlab official documentation
@@ -44,7 +42,7 @@ solve_time = toc;
 
 if isunix
     [~, mem] = system(['smem | grep ' strtrim(pid) ' | grep -v grep | awk -F "[ ]+" ''{print $6}''']);
-    
+
     proc_memory_end = str2num(mem) * 1024;
     memory_delta = proc_memory_end - proc_memory_start;
 else
