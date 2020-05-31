@@ -62,7 +62,7 @@
 \maketitle
 
 \section*{Abstract}
-Questo progetto si prefigge lo scopo di studiare l'implementazione del metodo di Choleski per la risoluzione sistemi lineari per matrici simmetriche defite positive sparse in un ambiente di programmazione open source e di compararli con l'implementazione closed-source di MATLAB.
+Questo progetto si prefigge lo scopo di studiare l'implementazione del metodo di Choleski per la risoluzione sistemi lineari per matrici simmetriche definite positive sparse in un ambiente di programmazione open source e di compararli con l'implementazione closed-source di MATLAB.
 
 Il confronto avverrà in termini di tempo, accuratezza, impiego della memoria e anche facilità d'uso sia in ambiente Linux che Windows, eseguendo il codice su diverse matrici derivate da problemi reali e raccolte nella \textbf{SuiteSparse Matrix Collection}\footnote{\url{https://sparse.tamu.edu/}}.
 
@@ -74,7 +74,7 @@ Per la decomposizione di cholesky, MATLAB mette a disposizione il modulo \textbf
 
 \subsubsection*{Utilizzo}
 \lstinline{R = chol(A, [triangle])}: Fattorizza la matrice $A$ simmetrica definita positiva in una matrice triangolare superiore $R$ tale che $A=R^{-1}R$.
-Il parametro \lstinline{triangle} permette di scegliere se attuare la decomposizione in una matrice triangolare superiore (opzione di default) o traiangolare inferiore. In quest'ultimo caso, la matrice $R$ risultante dall'equazione soddisferà l'uguaglianza $A = RR^{-1}$.
+Il parametro \lstinline{triangle} permette di scegliere se attuare la decomposizione in una matrice triangolare superiore (opzione di default) o triangolare inferiore. In quest'ultimo caso, la matrice $R$ risultante dall'equazione soddisferà l'uguaglianza $A = RR^{-1}$.
 
 \subsubsection*{Manutenzione}
 La libreria è stata rilasciata per la prima volta nell'aggiornamento R2013a MATLAB. Attualmente, è ancora supportata e non presenta lacune o problemi che sono stati riscontrati durante il suo l'utilizzo.
@@ -277,7 +277,7 @@ L'utilizzo della memoria, a differenza di quanto visto in precedenza nella \cref
 
 \smallskip
 \subsubsection*{Errore relativo}
-Si nota che,sia su c++ che con la libreria MatLab, si ha un errore comparabile/quasi uguale per entrambi i metodi, e che dopo un massimo ed un minimo nelle matrici più piccole, l'errore si stabilizza intorno a $10^{-11}$, indipendentemente dalle dimensioni delle matrici che il programma riesce a caricare.
+Si nota che, sia su c++ che con la libreria MatLab, si ha un errore comparabile/quasi uguale per entrambi i metodi, e che dopo un massimo ed un minimo nelle matrici più piccole, l'errore si stabilizza intorno a $10^{-11}$, indipendentemente dalle dimensioni delle matrici che il programma riesce a caricare.
 \begin{figure}[H]
     \makebox[\textwidth][c]{\includegraphics[width=1.3\linewidth]{unix_error.png}}
     \caption{Errore relativo su Linux}
@@ -290,7 +290,7 @@ Si nota che,sia su c++ che con la libreria MatLab, si ha un errore comparabile/q
 
 \subsection{C++}
 \subsubsection*{Tempo}
-TODO
+Come si può notare nella figura sottostante, Linux è leggermente più efficiente di Windows a sfruttare la libreria Eigen per c++, di un valore irrisorio quasi costante.
 \begin{figure}[H]
     \makebox[\textwidth][c]{\includegraphics[width=1.3\linewidth]{cpp_solve.png}}
     \caption{Tempo di risoluzione nell'implementazione C++}
@@ -298,7 +298,7 @@ TODO
 \end{figure}
 
 \subsubsection*{Errore Relativo}
-TODO
+L'errore relativo calcolato con Eigen in entrambe le architetture è identico.
 \begin{figure}[H]
     \makebox[\textwidth][c]{\includegraphics[width=1.3\linewidth]{cpp_error.png}}
     \caption{Errore relativo nell'implementazione C++}
@@ -306,7 +306,8 @@ TODO
 \end{figure}
 
 \subsubsection*{Memoria}
-TODO
+È possibile vedere come la memoria usata sia identica su tra le due architetture per matrici di dimensioni superiori a 500000.\newline
+le differenze analizzate sono irrisorie.
 \begin{figure}[H]
     \makebox[\textwidth][c]{\includegraphics[width=1.3\linewidth]{cpp_memory.png}}
     \caption{Utilizzo della memoria nell'implementazione C++}
@@ -315,7 +316,7 @@ TODO
 
 \subsection{Matlab}
 \subsubsection*{Tempo}
-TODO
+La figura seguente mostra come Matlab sia decisamente più veloce su un architettura Unix di circa mezzo ordine di grandezza.
 \begin{figure}[H]
     \makebox[\textwidth][c]{\includegraphics[width=1.3\linewidth]{matlab_solve.png}}
     \caption{Tempo di risoluzione nell'implementazione MATLAB}
@@ -323,7 +324,7 @@ TODO
 \end{figure}
 
 \subsubsection*{Errore Relativo}
-TODO
+L'errore relativo dei risultati della libreria Matlab non cambia a seconda delle archittetture.
 \begin{figure}[H]
     \makebox[\textwidth][c]{\includegraphics[width=1.3\linewidth]{matlab_error.png}}
     \caption{Errore relativo nell'implementazione MATLAB}
@@ -331,7 +332,8 @@ TODO
 \end{figure}
 
 \subsubsection*{Memoria}
-TODO
+La differenza di memoria utilizzata nelle due architetture è visibile solo sulla prima matrice, favorendo Unix.\newline
+È affermabile che l'architettura su cui viene utilizzato MatLab sia irrilevante.
 \begin{figure}[H]
     \makebox[\textwidth][c]{\includegraphics[width=1.3\linewidth]{matlab_memory.png}}
     \caption{Utilizzo della memoria nell'implementazione MATLAB}
@@ -341,7 +343,8 @@ TODO
 \newpage
 \section{Conclusioni}
 TODO
-
+Pare che l'architettura Unix sia marginalmente migliore di Windows in merito alle prestazioni.\newline
+I risultati mostrano come la libreria open source Eigen per C++ abbia risultati quasi sempre migliori rispetto a MatLab, ma ottimizzi la memoria e ciò permette di lavorare su matrici di dimensioni maggiori a parità di hardware. A discapito di un utilizzo più complesso e di maggior codice necessario.
 \subsection{Suddivisione del lavoro}
 Durante la realizzazione del progetto tutti i componenti del gruppo hanno partecipato attivamente alla sua realizzazione. In particolare:
 \begin{itemize}
