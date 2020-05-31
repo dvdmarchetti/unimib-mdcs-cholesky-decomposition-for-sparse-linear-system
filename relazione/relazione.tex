@@ -4,6 +4,7 @@
 \usepackage[italian]{babel} % lingua del documento
 \usepackage{blindtext}
 \usepackage{enumitem}
+\usepackage{graphicx}
 \usepackage{float}
 \usepackage{xcolor}   % for \textcolor
 \usepackage[font=small,labelfont=bf,skip=3pt]{caption}
@@ -49,11 +50,11 @@
 
 \author{
     \normalsize
-    \textsc{Silva Edoardo} 816560 \\
+    \textsc{Edoardo Silva} 816560 \\
     \normalsize
-    \textsc{Zhigui Bryan} 816335 \\
+    \textsc{Bryan Zhigui} 816335 \\
     \normalsize
-    \textsc{Marchetti Davide} 815990
+    \textsc{Davide Marchetti} 815990
 }
 
 \begin{document}
@@ -61,9 +62,9 @@
 \maketitle
 
 \section*{Abstract}
-Lo scopo di questo progetto è di studiare l'implementazione del metodo di Choleski per la risoluzione sistemi lineari per matrici sparse, simmetriche e defite positive in ambienti di programmazione open source e di compararli con l'implementazione di MATLAB.
+Questo progetto si prefigge lo scopo di studiare l'implementazione del metodo di Choleski per la risoluzione sistemi lineari per matrici simmetriche defite positive sparse in un ambiente di programmazione open source e di compararli con l'implementazione closed-source di MATLAB.
 
-Il confronto avverrà in termini di tempo, accuratezza, impiego della memoria e anche facilità d'uso sia in ambiente Linux che Windows, eseguendo il codice su diverse matrici sparse derivate da problemi reali e raccolte nella \textbf{SuiteSparse Matrix Collection}.
+Il confronto avverrà in termini di tempo, accuratezza, impiego della memoria e anche facilità d'uso sia in ambiente Linux che Windows, eseguendo il codice su diverse matrici derivate da problemi reali e raccolte nella \textbf{SuiteSparse Matrix Collection}\footnote{\url{https://sparse.tamu.edu/}}.
 
 \newpage
 \section{Analisi dell'implementazione}
@@ -77,6 +78,12 @@ Il parametro \lstinline{triangle} permette di scegliere se attuare la decomposiz
 
 \subsubsection*{Manutenzione}
 La libreria è stata rilasciata per la prima volta nell'aggiornamento R2013a MATLAB. Attualmente, è ancora supportata e non presenta lacune o problemi che sono stati riscontrati durante il suo l'utilizzo.
+
+\subsubsection{Documentazione}
+La documentazione ufficiale di MATLAB è ben strutturata e di facile consultazione. Vengono anche proposti molti esempi di utilizzo delle diverse funzioni in varie casistiche.
+
+\subsubsection{Problemi riscontrati}
+La criticità principale riguarda il supporto del modulo \lstinline{memory} esclusivamente per sistemi operativi Windows. Difatti, è stato necessario utilizzare due metodi di profiling della memoria diversi a seconda del sistema operativo.
 
 \subsubsection*{Licenza}
 Essendo MATLAB un software closed-source, non è possibile accedere al codice sorgente del modulo.
@@ -98,6 +105,9 @@ Il modulo \lstinline{unsupported/Eigen/SparseExtra} che contiene queste funziona
 \subsubsection{Manutenzione}
 Eigen è in sviluppo attivo, tuttavia, alcuni moduli sono marcati come deprecati e non ne è garantito il loro pieno funzionamento. Un esempio di questi è la classe \lstinline{MarketIO}, che permette di effettuare operazioni di input e ouput con file in formato \lstinline{Matrix Market (.mtx)}.
 
+\subsubsection{Documentazione}
+La documentazione di Eigen è di facile consulto e abbastanza completa. Tuttavia, non si può fare la stessa considerazione rispetto ai moduli \lstinline{unsupported}, per i quali la documentazione è spesso riferita a versioni precedenti o non presente.
+
 \subsubsection{Problemi riscontrati}
 Durante lo sviluppo, l'utilizzo di una classe deprecata ha inizialmente rallentato lo sviluppo. Infatti, delle matrici importate tramite \lstinline{MarketIO} veniva ignorato il fatto che fossero salvate come simmetriche o meno.
 
@@ -109,10 +119,11 @@ Tuttavia, questa trasformazione aggiuntiva comporta uno spreco di spazio su disc
 Eigen è un software gratuito ed open-source rilasciato con licenza Mozilla Public License 2.0 (MPL2: simple weak copyleft license) dalla versione 3.1.1.
 
 \newpage
-\section{Dettagli Implementativi}
+\section{Dettagli implementativi}
 Riporteremo di seguito le sezioni semplificate delle parti principali di ciascun'implementazione.
 
 \subsection{MATLAB}
+TODO
 \begin{lstlisting}[language=Matlab,emph={ones},caption=MATLAB: Algoritmo principale,label=fig:code-cpp-algo]
 function [rows, memory_delta, solve_time, error] = chol_solve(name)
     load(fullfile('', 'matrix_mat', name), "Problem");
@@ -137,6 +148,7 @@ end
 \end{lstlisting}
 
 \subsection{C++}
+TODO
 \begin{lstlisting}[language=C++,emph={result,SpMat,Eigen,int,std},caption=C++: Algoritmo principale,label=fig:code-cpp-algo]
 result analyze_matrix(std::string filename) {
     result r;
@@ -165,6 +177,7 @@ result analyze_matrix(std::string filename) {
 }
 \end{lstlisting}
 
+TODO
 \begin{lstlisting}[language=C++,emph={ull,std},caption=C++: Struct per la memorizzazione del risultato,label=fig:code-cpp-algo]
 typedef unsigned long long ull;
 struct result {
@@ -187,6 +200,28 @@ La piattaforma utilizzata per la produzione dei risultati riportati nelle \cref{
 
 \noindent
 Il disco utilizzato per l'esecuzione in ambiente Windows è un \textbf{SSD Samsung 850 EVO (250Gb)}, mentre Linux è installato su un \textbf{NVMe Sabrent (256Gb)}.
+
+\newpage
+\section{Matrici analizzate}
+L'analisi si è concentrata sulle seguenti matrici:
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{lrr}
+        \multicolumn{1}{c}{\textbf{Nome}} & \multicolumn{1}{c}{\textbf{Dimensione}} & \multicolumn{1}{c}{\textbf{NNZ}} \\
+        ex15 & 6.867 & 98.671 \\
+        shallow\_water1 & 81.920 & 327.680 \\
+        cfd1 & 70.656 & 1.825.580 \\
+        cfd2 & 123.440 & 3.085.406 \\
+        parabolic\_fem & 525.825 & 3.674.625 \\
+        apache2 & 715.176 & 4.817.870 \\
+        G3\_circuit & 1.585.478 & 7.660.826 \\
+        StocF-1465 & 1.465.137 & 21.005.389 \\
+        Flan\_1565 & 1.564.794 & 114.165.372
+    \end{tabular}
+    \caption{Matrici analizzate}
+    \label{tab:matrix-list}
+\end{table}
 
 \newpage
 \section{Risultati per sistema operativo}
@@ -305,5 +340,16 @@ TODO
 
 \newpage
 \section{Conclusioni}
+TODO
 
+\subsection{Suddivisione del lavoro}
+Durante la realizzazione del progetto tutti i componenti del gruppo hanno partecipato attivamente alla sua realizzazione. In particolare:
+\begin{itemize}
+  \item \textbf{Edoardo Silva} si è occupato...
+  \item \textbf{Davide Marchetti} si è occupato...
+  \item \textbf{Bryan Zhigui} si è occupato...
+\end{itemize}
+
+\noindent
+Tutti i componenti del gruppo hanno lavorato alla ... e collaborato alla stesura di questo documento.
 \end{document}
