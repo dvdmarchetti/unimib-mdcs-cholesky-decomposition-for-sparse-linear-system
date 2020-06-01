@@ -296,7 +296,7 @@ L'utilizzo della memoria, a differenza di quanto visto in precedenza nella \cref
 
 \smallskip
 \subsubsection*{Errore relativo}
-Si nota che, sia su c++ che con la libreria MatLab, si ha un errore comparabile/quasi uguale per entrambi i metodi, e che dopo un massimo ed un minimo nelle matrici più piccole, l'errore si stabilizza intorno a $10^{-11}$, indipendentemente dalle dimensioni delle matrici che il programma riesce a caricare.
+Si nota che, sia su c++ che con la libreria MatLab, si ha un errore comparabile per entrambi i metodi, e che dopo un massimo ed un minimo nelle matrici più piccole, l'errore si stabilizza intorno a $10^{-11}$, indipendentemente dalle dimensioni delle matrici che il programma riesce a caricare.
 \begin{figure}[H]
     \makebox[\textwidth][c]{\includegraphics[width=1.3\linewidth]{unix_error.png}}
     \caption{Errore relativo su Linux}
@@ -402,8 +402,7 @@ int main() {
             std::cout << entry.path() << std::endl;
             _result = analyze_matrix(entry.path().string());
 
-            output << entry.path().stem() << "," << _result << CSV_EOL;
-            output.close();
+            output << entry.path().stem() << "," << _result << CSV_EOL;            output.close();
         }
     }
 
