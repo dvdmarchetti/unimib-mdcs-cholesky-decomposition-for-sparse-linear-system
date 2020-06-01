@@ -43,6 +43,7 @@
 
 \title{
     Metodi del Calcolo Scientifico \\
+    \normalsize Progetto 1 \\
     \normalsize Risoluzione di sistemi lineari tramite il metodo di Cholesky \\
 }
 
@@ -79,14 +80,14 @@ Il parametro \lstinline{triangle} permette di scegliere se attuare la decomposiz
 \subsubsection*{Manutenzione}
 La libreria è stata rilasciata per la prima volta nell'aggiornamento R2013a MATLAB. Attualmente, è ancora supportata e non presenta lacune o problemi che sono stati riscontrati durante il suo l'utilizzo.
 
-\subsubsection{Documentazione}
+\subsubsection*{Documentazione}
 La documentazione ufficiale di MATLAB è ben strutturata e di facile consultazione. Vengono anche proposti molti esempi di utilizzo delle diverse funzioni in varie casistiche.
-
-\subsubsection{Problemi riscontrati}
-La criticità principale riguarda il supporto del modulo \lstinline{memory} esclusivamente per sistemi operativi Windows. Difatti, è stato necessario utilizzare due metodi di profiling della memoria diversi a seconda del sistema operativo.
 
 \subsubsection*{Licenza}
 Essendo MATLAB un software closed-source, non è possibile accedere al codice sorgente del modulo.
+
+\subsubsection*{Problemi riscontrati}
+La criticità principale riguarda il supporto del modulo \lstinline{memory} esclusivamente per sistemi operativi Windows. Difatti, è stato necessario utilizzare due metodi di profiling della memoria diversi a seconda del sistema operativo.
 
 \subsection{Open-Source (C++)}
 Dopo un'attenta analisi e comparazione di diverse opzioni, l'implementazione in C++ è stata costruita utilizzando \textbf{Eigen},  libreria che si pone l'obiettivo di essere leggera ed offire supporto alle operazioni su vettori e matrici dense e sparse.
@@ -96,35 +97,46 @@ Dopo un'attenta analisi e comparazione di diverse opzioni, l'implementazione in 
 
 Il modulo \lstinline{unsupported/Eigen/SparseExtra} che contiene queste funzionalità è attualmente deprecato.
 
-% \begin{itemize}
-% \item \textbf{Eigen::VectorXd::Ones(A.rows()):} dichiara matrice di dimensioni fissate (prese dalle dimensioni della matrice A), package 'VectorXd' usato per le operazioni su matrici dinamiche di double.
-% 	\item \textbf{Eigen::SimplicialCholesky<SpMat> chol(A):} Pacchetto creato per gestire matrici di grandi dimensioni con pochi elementi diversi da 0. Implementa uno schema di rappresentazione e gestione dei valori diversi da 0 con uso di poca memoria e alte prestazioni.\newline Il metodo chol(A) implementa la fattorizzazione di Cholesky della matrice A.
-% 	\item \textbf{Eigen::VectorXd x\_ap = chol.solve(b):} Applicazione del risolutore iterativo per risolvere la fattorizzazione.
-% \end{itemize}
-
-\subsubsection{Manutenzione}
+\subsubsection*{Manutenzione}
 Eigen è in sviluppo attivo, tuttavia, alcuni moduli sono marcati come deprecati e non ne è garantito il loro pieno funzionamento. Un esempio di questi è la classe \lstinline{MarketIO}, che permette di effettuare operazioni di input e ouput con file in formato \lstinline{Matrix Market (.mtx)}.
 
-\subsubsection{Documentazione}
+\subsubsection*{Documentazione}
 La documentazione di Eigen è di facile consulto e abbastanza completa. Tuttavia, non si può fare la stessa considerazione rispetto ai moduli \lstinline{unsupported}, per i quali la documentazione è spesso riferita a versioni precedenti o non presente.
 
-\subsubsection{Problemi riscontrati}
+\subsubsection*{Licenza}
+Eigen è un software gratuito ed open-source rilasciato con licenza Mozilla Public License 2.0 (MPL2: simple weak copyleft license) dalla versione 3.1.1.
+
+\subsubsection*{Problemi riscontrati}
 Durante lo sviluppo, l'utilizzo di una classe deprecata ha inizialmente rallentato lo sviluppo. Infatti, delle matrici importate tramite \lstinline{MarketIO} veniva ignorato il fatto che fossero salvate come simmetriche o meno.
 
 Questo inconveniente è stato risolto modificando lo script di conversione MATLAB \lstinline{mmwrite} per trasformare file \lstinline{.mat} in \lstinline{.mtx} e rigenerando le matrici assicurandosi che tutti gli elementi venissero salvati correttamente.
 
-Tuttavia, questa trasformazione aggiuntiva comporta uno spreco di spazio su disco per memorizzare il doppio dei valori rispetto ad un semplice indicatore che specifiche qualora la matrice sia simmetrica, e di tempo per la lettura dell'intera matrice da file.
-
-\subsubsection{Licenza}
-Eigen è un software gratuito ed open-source rilasciato con licenza Mozilla Public License 2.0 (MPL2: simple weak copyleft license) dalla versione 3.1.1.
+Tuttavia, questa trasformazione aggiuntiva comporta uno spreco di spazio su disco per memorizzare il doppio dei valori rispetto ad un semplice indicatore che specifichi qualora la matrice sia simmetrica, e di tempo per la conversione dei file e per la lettura del doppio delle righe da file durante l'esecuzione.
 
 \newpage
 \section{Dettagli implementativi}
 Riporteremo di seguito le sezioni semplificate delle parti principali di ciascun'implementazione.
+Lo schema di entrambi gli algoritmi coincide, le differenze sono date dal linguaggio utilizzato.
+
+Entrambi gli algoritmi accettano in input come parametro il percorso del file da analizzare ed effettuano le seguenti operazioni:
+\begin{enumerate}
+    \item Carico la matrice $M$ dal file specificato in input
+    \item Memorizzo l'occupazione attuale della memoria
+    \item Creo la soluzione esatta $x_{es}$ come vettore di $1$ e lunghezza pari alla dimensione della matrice
+    \item Calcolo il vettore $b$ dei termini noti
+    \item Risolvo cholesky con il metodo scelto fornendo la matrice $M$ e il vettore $b$ memorizzando il tempo di esecuzione ed ottenendo la soluzione approssimata $x_{ap}$
+    \item Calcolo la memoria utilizzata subito dopo la risoluzione del sistema
+    \item Calcolo l'errore relativo tra $x_ap$ e $x_{es}$
+    \item Restituisco tutte le metriche registrate al chiamante che si occuperà della memorizzazione su file
+\end{enumerate}
 
 \subsection{MATLAB}
-TODO
-\begin{lstlisting}[language=Matlab,emph={ones},caption=MATLAB: Algoritmo principale,label=fig:code-cpp-algo]
+In particolare, MATLAB accetta in input un file che si assume essere una matrice memorizzata in formato \lstinline{.mat}. Questo permette di caricarla semplicemente tramite la funzione \lstinline{load}.
+
+Il listato \ref{code:matlab-algo} riporta la procedura descritta in precedenza utilizzata nella nostra implementazione.
+
+\newpage
+\begin{lstlisting}[language=Matlab,emph={ones},caption=MATLAB: Algoritmo principale,label=code:matlab-algo]
 function [rows, memory_delta, solve_time, error] = chol_solve(name)
     load(fullfile('', 'matrix_mat', name), "Problem");
 
@@ -148,8 +160,23 @@ end
 \end{lstlisting}
 
 \subsection{C++}
-TODO
-\begin{lstlisting}[language=C++,emph={result,SpMat,Eigen,int,std},caption=C++: Algoritmo principale,label=fig:code-cpp-algo]
+Nell'implementazione C++ per la funzione \lstinline{analyze_matrix} si è scelto di definire una \lstinline{struct} contenente tutti i campi che era necessario ottenere in output (listato \ref{code:cpp-struct}).
+
+Questo permette di semplificare il codice evitando di utilizzare più parametri passati per indirizzo come valori di output.
+
+\begin{lstlisting}[language=C++,emph={ull,std},caption=C++: Struct per la memorizzazione del risultato,label=code:cpp-struct]
+typedef unsigned long long ull;
+struct result {
+    unsigned int size;
+    ull memory_delta;
+    std::chrono::duration<double> solve_time;
+    double relative_error;
+};
+\end{lstlisting}
+
+\noindent
+L'implementazione del solutore ricalca gli step definiti precedentemente. La lettura della memoria utilizzata avviene utilizzando metodi di una classe personalizzata scritta ad-hoc per il progetto e riportata nella \cref{section:code}.
+\begin{lstlisting}[language=C++,emph={result,SpMat,Eigen,int,std},caption=C++: Algoritmo principale,label=code:cpp-algo]
 result analyze_matrix(std::string filename) {
     result r;
     SpMat A; // Eigen::SparseMatrix<double>
@@ -175,17 +202,6 @@ result analyze_matrix(std::string filename) {
     r.solve_time = chol_finish - chol_start;
     r.relative_error = (x_ap - x_es).norm() / x_es.norm();
 }
-\end{lstlisting}
-
-TODO
-\begin{lstlisting}[language=C++,emph={ull,std},caption=C++: Struct per la memorizzazione del risultato,label=fig:code-cpp-algo]
-typedef unsigned long long ull;
-struct result {
-    unsigned int size;
-    ull memory_delta;
-    std::chrono::duration<double> solve_time;
-    double relative_error;
-};
 \end{lstlisting}
 
 \newpage
@@ -230,7 +246,7 @@ L'analisi si è concentrata sulle seguenti matrici:
 \subsection{Windows}
 \subsubsection*{Tempo}
 All'incremento delle dimensioni della matrice di input non si manifesta una crescita lineare né costante in termini di tempo.
-Ciononostante, i tempi di esecuzione nell'implementazione in MATLAB risultano essere meno variabili rispetto alla controparte in C++).
+Ciononostante, i tempi di esecuzione nell'implementazione in MATLAB risultano essere meno variabili rispetto alla controparte in C++.
 \begin{figure}[H]
     \makebox[\textwidth][c]{\includegraphics[width=1.3\linewidth]{windows_solve.png}}
     \caption{Tempo di risoluzione su Windows}
@@ -239,7 +255,7 @@ Ciononostante, i tempi di esecuzione nell'implementazione in MATLAB risultano es
 
 \smallskip
 \subsubsection*{Memoria}
-Come illustrato in \cref{fig:windows-memory}, l'implementazione in C++ occupa molta meno memoria rispetto a quella in MATLAB, in particolare al crescere della dimensione della matrice e del numero di elementi contenuti in essa.
+Come illustrato in \cref{fig:windows-memory}, l'implementazione in C++ occupa molta meno memoria rispetto a quella in MATLAB, in particolare al crescere della dimensione della matrice e del numero di elementi non nulli contenuti in essa.
 
 Difatti, tutte le matrici analizzate in MATLAB per le quali non è presente un risultato nel grafico, durante la decomposizione di Cholesky hanno comportato un errore \lstinline{Out of memory}.
 \begin{figure}[H]
@@ -251,7 +267,7 @@ Difatti, tutte le matrici analizzate in MATLAB per le quali non è presente un r
 \smallskip
 \subsubsection*{Errore Relativo}
 Entrambe le implementazioni presentano un errore relativo molto simile.
-In \cref{fig:windows-error} si nota come al crescere della dimensione della matrice, in C++ l'errore relativo sembra stabilizzarsi tra $10^{-10}$ e $10^{-12}$.
+In \cref{fig:windows-error} si nota come al crescere della dimensione della matrice per C++ l'errore relativo sembra stabilizzarsi tra $10^{-10}$ e $10^{-12}$.
 \begin{figure}[H]
     \makebox[\textwidth][c]{\includegraphics[width=1.3\linewidth]{windows_error.png}}
     \caption{Errore relativo su Windows}
@@ -290,35 +306,34 @@ Si nota che, sia su c++ che con la libreria MatLab, si ha un errore comparabile/
 
 \subsection{C++}
 \subsubsection*{Tempo}
-Come si può notare nella figura sottostante, Linux è leggermente più efficiente di Windows a sfruttare la libreria Eigen per c++, di un valore irrisorio quasi costante.
+Come illustrato in \cref{fig:cpp-time}, Linux risulta più efficiente di Windows nell'esecuzione dell'implementazione C++ per tutte le matrici analizzate.
 \begin{figure}[H]
-    \makebox[\textwidth][c]{\includegraphics[width=1.3\linewidth]{cpp_solve.png}}
+    \makebox[\textwidth][c]{\includegraphics[width=1.18\linewidth]{cpp_solve.png}}
     \caption{Tempo di risoluzione nell'implementazione C++}
     \label{fig:cpp-time}
 \end{figure}
 
 \subsubsection*{Errore Relativo}
-L'errore relativo calcolato con Eigen in entrambe le architetture è identico.
+L'errore relativo non risulta influenzato dal diverso ambiente sul quale viene eseguita l'implementazione.
 \begin{figure}[H]
-    \makebox[\textwidth][c]{\includegraphics[width=1.3\linewidth]{cpp_error.png}}
+    \makebox[\textwidth][c]{\includegraphics[width=1.18\linewidth]{cpp_error.png}}
     \caption{Errore relativo nell'implementazione C++}
     \label{fig:cpp-error}
 \end{figure}
 
 \subsubsection*{Memoria}
-È possibile vedere come la memoria usata sia identica su tra le due architetture per matrici di dimensioni superiori a 500000.\newline
-le differenze analizzate sono irrisorie.
+Al crescere della dimensione della matrice, la memoria impiegata per la risoluzione tende ad essere pressoché identica nei due ambienti.
 \begin{figure}[H]
-    \makebox[\textwidth][c]{\includegraphics[width=1.3\linewidth]{cpp_memory.png}}
+    \makebox[\textwidth][c]{\includegraphics[width=1.2\linewidth]{cpp_memory.png}}
     \caption{Utilizzo della memoria nell'implementazione C++}
     \label{fig:cpp-memory}
 \end{figure}
 
 \subsection{Matlab}
 \subsubsection*{Tempo}
-La figura seguente mostra come Matlab sia decisamente più veloce su un architettura Unix di circa mezzo ordine di grandezza.
+L'esecuzione dello script MATLAB in ambiente Linux risulta essere più efficiente. In questo caso, la differenza risulta ancora più marcata rispetto all'implementazione C++ illustrata in \cref{fig:cpp-time}.
 \begin{figure}[H]
-    \makebox[\textwidth][c]{\includegraphics[width=1.3\linewidth]{matlab_solve.png}}
+    \makebox[\textwidth][c]{\includegraphics[width=1.2\linewidth]{matlab_solve.png}}
     \caption{Tempo di risoluzione nell'implementazione MATLAB}
     \label{fig:matlab-time}
 \end{figure}
@@ -332,8 +347,7 @@ L'errore relativo dei risultati della libreria Matlab non cambia a seconda delle
 \end{figure}
 
 \subsubsection*{Memoria}
-La differenza di memoria utilizzata nelle due architetture è visibile solo sulla prima matrice, favorendo Unix.\newline
-È affermabile che l'architettura su cui viene utilizzato MatLab sia irrilevante.
+La differenza di memoria utilizzata nelle due architetture è visibile solo sull'esecuzionen della prima matrice, le restanti impiegano pressoché lo stesso quantitativo di memoria.
 \begin{figure}[H]
     \makebox[\textwidth][c]{\includegraphics[width=1.3\linewidth]{matlab_memory.png}}
     \caption{Utilizzo della memoria nell'implementazione MATLAB}
@@ -342,17 +356,95 @@ La differenza di memoria utilizzata nelle due architetture è visibile solo sull
 
 \newpage
 \section{Conclusioni}
-TODO
-Pare che l'architettura Unix sia marginalmente migliore di Windows in merito alle prestazioni.\newline
-I risultati mostrano come la libreria open source Eigen per C++ abbia risultati quasi sempre migliori rispetto a MatLab, ma ottimizzi la memoria e ciò permette di lavorare su matrici di dimensioni maggiori a parità di hardware. A discapito di un utilizzo più complesso e di maggior codice necessario.
-\subsection{Suddivisione del lavoro}
-Durante la realizzazione del progetto tutti i componenti del gruppo hanno partecipato attivamente alla sua realizzazione. In particolare:
-\begin{itemize}
-  \item \textbf{Edoardo Silva} si è occupato...
-  \item \textbf{Davide Marchetti} si è occupato...
-  \item \textbf{Bryan Zhigui} si è occupato...
-\end{itemize}
+Dai risultati ottenuti, il problema principale di MATLAB risulta l'eccessivo utilizzo di memoria RAM. Al contrario, C++ riesce a risolvere matrici di dimensioni più grandi grazie ad una gestione più efficiente ed un minor overhead del linguaggio.
 
-\noindent
-Tutti i componenti del gruppo hanno lavorato alla ... e collaborato alla stesura di questo documento.
+\smallskip
+Analizzando i tempi di esecuzione invece, la situazione si ribalta. MATLAB riesce a ridurre notevolmente i tempi di attesa per la soluzione del sistema soprattutto al crescere della dimensione della matrice.
+Invece, C++ impiega un tempo maggiore nell'ordine di alcuni minuti (comparabile solo sulle matrici per le quali si è riusciti ad avere una soluzione in entrambe le implementazioni).
+
+Questa differenza così marcata è spiegabile facilmente: MATLAB è un software che esegue calcoli in parallelo e sfrutta tutti i core presenti sulla sistema utilizzato, inoltre le operazioni più comuni in ambito matematico ci si aspetta che siano ottimizzate a dovere.
+D'altro canto, l'implementazione C++ al momento è un processo single core, non riuscendo quindi a sfruttare la totale potenza del processore ed impiegando più tempo.
+
+Questa ipotesi è rafforzata dal confronto tra \cref{fig:cpp-time,fig:linux-time}, infatti MATLAB riesce a beneficiare dell'esecuzione multicore rimarcando ancora di più la differenza nei tempi di esecuzione rispetto a C++.
+
+\smallskip
+Analizzando le due implementazioni sui diversi sistemi operativi possiamo affermare con sicurezza che Linux riesca ad eseguire in modo più prestante le due implementazioni.
+
+\smallskip
+In conclusione, i risultati mostrano come la libreria Eigen per C++ prediliga un utilizzo più efficiente della memoria, penalizzando il tempo di esecuzione. Questo, a parità di hardware, permette di lavorare su matrici di dimensioni maggiori a discapito di un codice più complesso e meno intuitivo.
+
+\newpage
+\section{Listati di codice}
+\begin{lstlisting}[language=C++,basicstyle=\footnotesize\ttfamily,caption=Lettura della memoria in C++]
+// Adapted from: https://stackoverflow.com/questions/63166/how-to-determine-cpu-and-memory-consumption-from-inside-a-process
+unsigned long long memory::process_current_physical() {
+#ifdef OS_WIN
+    PROCESS_MEMORY_COUNTERS_EX pmc;
+    GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS*)&pmc, sizeof(pmc));
+
+    return pmc.WorkingSetSize;
+#elif defined(OS_NIX)
+    long rss = 0L;
+    FILE* fp = NULL;
+
+    if ((fp = fopen("/proc/self/statm", "r")) == NULL) {
+        return (size_t)0L;
+    }
+
+    if (fscanf(fp, "%*s%ld", &rss) != 1) {
+        fclose(fp);
+        return (size_t) 0L;
+    }
+
+    fclose(fp);
+    return (size_t) rss * (size_t) sysconf(_SC_PAGESIZE);
+#endif
+}
+\end{lstlisting}
+
+\newpage
+\begin{lstlisting}[language=MatLab,basicstyle=\footnotesize\ttfamily,caption=Funzione di conversione da \lstinline{.mat} a \lstinline{.mtx} per matrici simmetriche]
+function [ err ] = mmwrite_symmetric(filename,A)
+mattype = 'real';
+precision = 16;
+comment = '';
+
+mmfile = fopen([filename],'w');
+if (mmfile == -1)
+  error('Cannot open file for output');
+end;
+
+[M,N] = size(A);
+if (issparse(A))
+  [I,J,V] = find(A);
+
+  issymm = 0;
+  symm = 'general';
+  [I,J,V] = find(A);
+  NZ = nnz(A);
+
+  rep = 'coordinate';
+
+  fprintf(mmfile, '%%%%MatrixMarket matrix %s %s %s\n', 'coordinate', mattype, symm);
+
+  [MC,NC] = size(comment);
+  if (MC == 0)
+    fprintf(mmfile, '%% Generated %s\n', [date]);
+  else
+    for i = 1:MC,
+      fprintf(mmfile, '%%%s\n', comment(i, :));
+    end
+  end
+
+  fprintf(mmfile, '%d %d %d\n', M, N, NZ);
+  realformat = sprintf('%%d %%d %% .%dg\n', precision);
+
+  for i = 1:NZ
+    fprintf(mmfile, realformat, I(i), J(i), V(i));
+  end;
+end
+fclose(mmfile);
+\end{lstlisting}
+
+\label{section:code}
 \end{document}
