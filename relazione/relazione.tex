@@ -71,14 +71,16 @@ Il confronto avverrà in termini di tempo, accuratezza, impiego della memoria e 
 \section{Analisi dell'implementazione}
 
 \subsection{MATLAB}
-Per la decomposizione di cholesky, MATLAB mette a disposizione il modulo \textbf{cholesky.matlab} contenente tutto il necessario. In particolare è stata utilizzata la funzione \textbf{chol}
+Per la decomposizione di cholesky, MATLAB mette a disposizione il modulo \lstinline{Symbolic Math Toolkit} contenente tutto il necessario. In particolare è stata utilizzata la funzione \lstinline{chol}\footnote{\url{https://www.mathworks.com/help/matlab/ref/chol.html}}.
 
 \subsubsection*{Utilizzo}
-\lstinline{R = chol(A, [triangle])}: Fattorizza la matrice $A$ simmetrica definita positiva in una matrice triangolare superiore $R$ tale che $A=R^{-1}R$.
-Il parametro \lstinline{triangle} permette di scegliere se attuare la decomposizione in una matrice triangolare superiore (opzione di default) o triangolare inferiore. In quest'ultimo caso, la matrice $R$ risultante dall'equazione soddisferà l'uguaglianza $A = RR^{-1}$.
+\lstinline{R = chol(A, [triangle])}: fattorizza la matrice $A$ simmetrica definita positiva in una matrice triangolare superiore $R$ tale che $A=R^{-1}R$.
+
+Il parametro \lstinline{triangle} permette di scegliere se attuare la decomposizione in una matrice triangolare superiore (default) o triangolare inferiore.
+In quest'ultimo caso, la matrice $R$ risultante dall'equazione soddisferà l'uguaglianza $A = RR^{-1}$.
 
 \subsubsection*{Manutenzione}
-La libreria è stata rilasciata per la prima volta nell'aggiornamento R2013a MATLAB. Attualmente, è ancora supportata e non presenta lacune o problemi che sono stati riscontrati durante il suo l'utilizzo.
+La libreria è stata rilasciata per la prima volta nell'aggiornamento R2013a MATLAB. Attualmente, è ancora supportata e non presenta lacune o problemi riscontrati durante il suo utilizzo.
 
 \subsubsection*{Documentazione}
 La documentazione ufficiale di MATLAB è ben strutturata e di facile consultazione. Vengono anche proposti molti esempi di utilizzo delle diverse funzioni in varie casistiche.
@@ -87,13 +89,13 @@ La documentazione ufficiale di MATLAB è ben strutturata e di facile consultazio
 Essendo MATLAB un software closed-source, non è possibile accedere al codice sorgente del modulo.
 
 \subsubsection*{Problemi riscontrati}
-La criticità principale riguarda il supporto del modulo \lstinline{memory} esclusivamente per sistemi operativi Windows. Difatti, è stato necessario utilizzare due metodi di profiling della memoria diversi a seconda del sistema operativo.
+La criticità principale riguarda il supporto del modulo \lstinline{memory} esclusivamente per sistemi operativi Windows. Difatti, è stato necessario utilizzare due metodi di profiling della memoria diversi a seconda del sistema operativo di esecuzione.
 
 \subsection{Open-Source (C++)}
-Dopo un'attenta analisi e comparazione di diverse opzioni, l'implementazione in C++ è stata costruita utilizzando \textbf{Eigen},  libreria che si pone l'obiettivo di essere leggera ed offire supporto alle operazioni su vettori e matrici dense e sparse.
+Dopo un'attenta analisi e comparazione di diverse opzioni, l'implementazione in C++ è stata costruita utilizzando \textbf{Eigen},  libreria che si pone l'obiettivo di essere leggera ed offrire supporto alle operazioni su vettori e matrici dense e sparse.
 
 \subsubsection*{Utilizzo}
-\lstinline{Eigen::loadMarket(A, filename)}: Importa i valori di una matrice sparsa memorizzata in un file \lstinline{.mtx} nella matrice fornita come primo argomento. Nel nostro programma, \lstinline{A} è definita come \lstinline{Eigen::SparseMatrix<double>}.
+\lstinline{Eigen::loadMarket(A, filename)}: importa i valori di una matrice sparsa memorizzata in un file \lstinline{.mtx} nella matrice fornita come primo argomento. Nel nostro programma, \lstinline{A} è definita come \lstinline{Eigen::SparseMatrix<double>}.
 
 Il modulo \lstinline{unsupported/Eigen/SparseExtra} che contiene queste funzionalità è attualmente deprecato.
 
@@ -101,32 +103,33 @@ Il modulo \lstinline{unsupported/Eigen/SparseExtra} che contiene queste funziona
 Eigen è in sviluppo attivo, tuttavia, alcuni moduli sono marcati come deprecati e non ne è garantito il loro pieno funzionamento. Un esempio di questi è la classe \lstinline{MarketIO}, che permette di effettuare operazioni di input e ouput con file in formato \lstinline{Matrix Market (.mtx)}.
 
 \subsubsection*{Documentazione}
-La documentazione di Eigen è di facile consulto e abbastanza completa. Tuttavia, non si può fare la stessa considerazione rispetto ai moduli \lstinline{unsupported}, per i quali la documentazione è spesso riferita a versioni precedenti o non presente.
+La documentazione di Eigen è di facile consulto e abbastanza completa. Tuttavia, non si può fare la stessa considerazione rispetto ai moduli inseriti nel namespace \lstinline{unsupported}, per i quali la documentazione è spesso mancante o riferita a versioni precedenti.
 
 \subsubsection*{Licenza}
 Eigen è un software gratuito ed open-source rilasciato con licenza Mozilla Public License 2.0 (MPL2: simple weak copyleft license) dalla versione 3.1.1.
 
 \subsubsection*{Problemi riscontrati}
-Durante lo sviluppo, l'utilizzo di una classe deprecata ha inizialmente rallentato lo sviluppo. Infatti, delle matrici importate tramite \lstinline{MarketIO} veniva ignorato il fatto che fossero salvate come simmetriche o meno.
+L'utilizzo di una classe deprecata ha inizialmente rallentato lo sviluppo. Infatti, delle matrici importate tramite \lstinline{MarketIO} veniva ignorato il fatto che fossero salvate come simmetriche o meno.
 
 Questo inconveniente è stato risolto modificando lo script di conversione MATLAB \lstinline{mmwrite} per trasformare file \lstinline{.mat} in \lstinline{.mtx} e rigenerando le matrici assicurandosi che tutti gli elementi venissero salvati correttamente.
+Lo script utilizzato per la conversione è riportato nella \cref{section:code}.
 
 Tuttavia, questa trasformazione aggiuntiva comporta uno spreco di spazio su disco per memorizzare il doppio dei valori rispetto ad un semplice indicatore che specifichi qualora la matrice sia simmetrica, e di tempo per la conversione dei file e per la lettura del doppio delle righe da file durante l'esecuzione.
 
 \newpage
 \section{Dettagli implementativi}
 Riporteremo di seguito le sezioni semplificate delle parti principali di ciascun'implementazione.
-Lo schema di entrambi gli algoritmi coincide, le differenze sono date dal linguaggio utilizzato.
+Lo schema di entrambi gli algoritmi coincide, le differenze sono date dalle peculiarità del linguaggio utilizzato.
 
 Entrambi gli algoritmi accettano in input come parametro il percorso del file da analizzare ed effettuano le seguenti operazioni:
 \begin{enumerate}
     \item Carico la matrice $M$ dal file specificato in input
     \item Memorizzo l'occupazione attuale della memoria
-    \item Creo la soluzione esatta $x_{es}$ come vettore di $1$ e lunghezza pari alla dimensione della matrice
+    \item Creo la soluzione esatta $x_{es}$ come vettore di elementi con valore $1$ pari alla dimensione della matrice $M$
     \item Calcolo il vettore $b$ dei termini noti
-    \item Risolvo cholesky con il metodo scelto fornendo la matrice $M$ e il vettore $b$ memorizzando il tempo di esecuzione ed ottenendo la soluzione approssimata $x_{ap}$
+    \item Applico la decomposizione di Cholesky con il metodo scelto fornendo in input la matrice $M$ e il vettore $b$ memorizzando il tempo di esecuzione ed ottenendo la soluzione approssimata $x_{ap}$
     \item Calcolo la memoria utilizzata subito dopo la risoluzione del sistema
-    \item Calcolo l'errore relativo tra $x_ap$ e $x_{es}$
+    \item Calcolo l'errore relativo tra $x_{ap}$ e $x_{es}$
     \item Restituisco tutte le metriche registrate al chiamante che si occuperà della memorizzazione su file
 \end{enumerate}
 
@@ -375,6 +378,40 @@ In conclusione, i risultati mostrano come la libreria Eigen per C++ prediliga un
 
 \newpage
 \section{Listati di codice}
+\label{section:code}
+\begin{lstlisting}[language=C++,emph={std},basicstyle=\footnotesize\ttfamily,caption=Main dell'implementazione C++]
+int main() {
+    result _result;
+    std::ofstream output(OUTPUT_FILE, std::ofstream::out);
+
+    // Write headers
+    output << "filename" << ","
+        << "size" << ","
+        << "memory_delta" << ","
+        << "solve_time" << ","
+        << "relative_error" << CSV_EOL;
+
+    // Look for matrix in ../matlab/matrix_mtx folder
+    std::string path = "../matlab/matrix_mtx";
+    for (const auto& entry : std::filesystem::directory_iterator(path)) {
+        if (entry.path().extension() == ".mtx") {
+            if (! output.is_open()) {
+                output.open(OUTPUT_FILE, std::ofstream::app);
+            }
+
+            std::cout << entry.path() << std::endl;
+            _result = analyze_matrix(entry.path().string());
+
+            output << entry.path().stem() << "," << _result << CSV_EOL;
+            output.close();
+        }
+    }
+
+    return 0;
+}
+\end{lstlisting}
+
+\newpage
 \begin{lstlisting}[language=C++,basicstyle=\footnotesize\ttfamily,caption=Lettura della memoria in C++]
 // Adapted from: https://stackoverflow.com/questions/63166/how-to-determine-cpu-and-memory-consumption-from-inside-a-process
 unsigned long long memory::process_current_physical() {
@@ -400,6 +437,29 @@ unsigned long long memory::process_current_physical() {
     return (size_t) rss * (size_t) sysconf(_SC_PAGESIZE);
 #endif
 }
+\end{lstlisting}
+
+\newpage
+\begin{lstlisting}[language=MatLab,basicstyle=\footnotesize\ttfamily,caption=Main dell'implementazione MATLAB]
+path = fullfile('matrix_mat', '*.mat');
+files = dir(path);
+filesCount = length(files);
+
+results = ["filename", "size", "memory_delta", "solve_time", "relative_error"];
+
+for K = 1 : filesCount
+  filename = convertCharsToStrings(files(K).name);
+  [size, memory_delta, solve_time, relative_error] = chol_solve(filename, 1);
+
+  results = [results(1:K,:); [strtok(filename, '.'),size,memory_delta,solve_time,relative_error]];
+  clearvars filename size memory_delta solve_time relative_error;
+end
+
+if isunix
+  writematrix(results, 'unix-output.csv');
+elseif ispc
+  writematrix(results, 'windows-output.csv');
+end
 \end{lstlisting}
 
 \newpage
@@ -445,6 +505,4 @@ if (issparse(A))
 end
 fclose(mmfile);
 \end{lstlisting}
-
-\label{section:code}
 \end{document}
